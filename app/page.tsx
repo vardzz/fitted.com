@@ -1,7 +1,24 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import dynamic from "next/dynamic";
 import { Profile, TailoredResume } from "@/lib/types";
+
+const ResumeViewer = dynamic(() => import("@/components/ResumeViewer"), {
+  ssr: false,
+  loading: () => (
+    <div
+      style={{
+        padding: 48,
+        textAlign: "center",
+        color: "var(--muted)",
+        fontSize: 15,
+      }}
+    >
+      Loading resume viewer...
+    </div>
+  ),
+});
 
 export default function Home() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -164,6 +181,7 @@ export default function Home() {
         setStatusText("Clarification needed");
       } else {
         setTailoredData(tailored);
+        setClarifyingQuestion(null);
         setStatusText("Ready");
         setStep(3);
       }
@@ -175,11 +193,30 @@ export default function Home() {
     }
   };
 
+  const handleReset = () => {
+    setStep(1);
+    setProfile(null);
+    setCvText("");
+    setTailoredData(null);
+    setRoleInput("");
+    setJobPostingInput("");
+    setClarifyingQuestion(null);
+    setClarificationAnswer("");
+    setStatusText("Ready");
+    setErrorMsg(null);
+  };
+
   return (
     <div className={step === 3 ? "container-wide" : "container-narrow"}>
       {/* Header bar */}
       <header className="header-bar">
-        <span className="wordmark">Fitted</span>
+        <span
+          className="wordmark"
+          onClick={handleReset}
+          style={{ cursor: "pointer" }}
+        >
+          Fitted
+        </span>
         <div className="status-chip" aria-live="polite">
           <span
             className={`status-dot ${
@@ -407,10 +444,128 @@ export default function Home() {
         </section>
       )}
 
-      {/* Step 3 Placeholder - will be populated in Phase 4 */}
+      {/* Step 3: Result View */}
       {step === 3 && tailoredData && (
         <section>
-          <h2>Tailored Resume Preview</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => setStep(2)}
+            >
+              ← Edit Role / Job Description
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={handleReset}
+            >
+              Upload New CV
+            </button>
+          </div>
+
+          <div className="result-grid">
+            {/* Left Column: PDF Preview */}
+            <div>
+              <ResumeViewer tailored={tailoredData} role={roleInput} />
+            </div>
+
+            {/* Right Column: Dropped items & Gaps panels */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              {/* What I cut and why */}
+              <div className="card">
+                <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 6 }}>
+                  What I cut and why
+                </h3>
+                <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 16 }}>
+                  Items dropped or condensed to fit a compact Harvard-style one-page layout.
+                </p>
+
+                {tailoredData.dropped && tailoredData.dropped.length > 0 ? (
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                    {tailoredData.dropped.map((cut, idx) => (
+                      <li
+                        key={idx}
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 10,
+                          fontSize: 14,
+                          lineHeight: 1.5,
+                          marginBottom: 12,
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            backgroundColor: "var(--muted)",
+                            marginTop: 7,
+                            flexShrink: 0,
+                          }}
+                        />
+                        <div>
+                          <strong>{cut.item}:</strong>{" "}
+                          <span style={{ color: "var(--muted)" }}>
+                            {cut.reason}
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p style={{ fontSize: 14, color: "var(--muted)" }}>
+                    All relevant profile items were fitted into the one-page resume.
+                  </p>
+                )}
+              </div>
+
+              {/* Not shown in your CV (Gaps) */}
+              <div className="card">
+                <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 6 }}>
+                  Not shown in your CV
+                </h3>
+                <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 16 }}>
+                  Target role requirements not backed by your CV. We never invent facts.
+                </p>
+
+                {tailoredData.gaps && tailoredData.gaps.length > 0 ? (
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                    {tailoredData.gaps.map((gap, idx) => (
+                      <li
+                        key={idx}
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 10,
+                          fontSize: 14,
+                          lineHeight: 1.5,
+                          marginBottom: 10,
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            backgroundColor: "var(--warn)",
+                            marginTop: 7,
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span style={{ color: "var(--ink)" }}>{gap}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p style={{ fontSize: 14, color: "var(--ok)", fontWeight: 500 }}>
+                    No significant gaps identified for this role!
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </section>
       )}
     </div>
