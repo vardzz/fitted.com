@@ -51,7 +51,7 @@ Add your Google Gemini API key obtained from [Google AI Studio](https://aistudio
 
 ```env
 LLM_API_KEY=your_gemini_api_key_here
-LLM_MODEL=gemini-2.5-flash
+LLM_MODEL=gemini-3.8-flash
 ```
 
 ### 3. Run Development Server

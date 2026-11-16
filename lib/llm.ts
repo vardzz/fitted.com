@@ -19,7 +19,7 @@ export async function callLLM<T = any>(
     throw new Error("Server configuration error: LLM_API_KEY is not set.");
   }
 
-  const model = process.env.LLM_MODEL || "gemini-2.5-flash";
+  const model = process.env.LLM_MODEL || "gemini-3.8-flash";
   const ai = new GoogleGenAI({ apiKey });
 
   const runCall = async (): Promise<T> => {
