@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Profile, TailoredResume } from "@/lib/types";
 
@@ -50,6 +50,14 @@ export default function Home() {
   // Drag & drop state
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const promptInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Auto-focus prompt input when reaching Step 2
+  useEffect(() => {
+    if (step === 2 && promptInputRef.current) {
+      promptInputRef.current.focus();
+    }
+  }, [step, clarifyingQuestion]);
 
   const processCvText = async (text: string) => {
     setStatusText("Extracting profile");
@@ -147,14 +155,15 @@ export default function Home() {
   };
 
   const handleTailorSubmit = async (clarificationValue?: string) => {
-    if (!roleInput.trim()) {
+    const activeRole = roleInput.trim();
+    if (!activeRole) {
       setErrorMsg("Please enter the role you are applying for.");
       return;
     }
 
     setErrorMsg(null);
     setIsProcessing(true);
-    setStatusText(`Tailoring for ${roleInput.trim()}`);
+    setStatusText(`Tailoring for ${activeRole}`);
 
     try {
       const res = await fetch("/api/tailor", {
@@ -162,7 +171,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           profile,
-          role: roleInput.trim(),
+          role: activeRole,
           posting: jobPostingInput.trim() || undefined,
           clarification: clarificationValue || undefined,
           cvText,
@@ -193,6 +202,19 @@ export default function Home() {
     }
   };
 
+  const handlePromptFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (clarifyingQuestion) {
+      if (clarificationAnswer.trim()) {
+        handleTailorSubmit(clarificationAnswer.trim());
+      }
+    } else {
+      if (roleInput.trim()) {
+        handleTailorSubmit();
+      }
+    }
+  };
+
   const handleReset = () => {
     setStep(1);
     setProfile(null);
@@ -218,7 +240,7 @@ export default function Home() {
           >
             Fitted
           </span>
-          <span className="brand-tag">one-page</span>
+          <span className="brand-tag">v1.0</span>
         </div>
 
         <div className="status-chip" aria-live="polite">
@@ -236,7 +258,7 @@ export default function Home() {
         <section>
           <h1 className="page-title">Your CV, cut to fit the role.</h1>
           <p className="page-tagline">
-            Upload your CV. We extract facts, tailor bullets to your target role, and render an academic Harvard-style one-page PDF.
+            Upload your CV. We parse facts, tailor bullets to your target role, and render an academic Harvard-style one-page PDF.
           </p>
 
           <div
@@ -257,9 +279,8 @@ export default function Home() {
               disabled={isProcessing}
             />
 
-            {/* Subtle Document Icon */}
             <div style={{ marginBottom: 14, color: "var(--color-fg-muted)" }}>
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "0 auto" }}>
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "0 auto" }}>
                 <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                 <polyline points="14 2 14 8 20 8" />
                 <line x1="16" y1="13" x2="8" y2="13" />
@@ -299,7 +320,14 @@ export default function Home() {
             <form onSubmit={handlePasteSubmit} style={{ marginTop: 24 }}>
               <textarea
                 rows={8}
-                style={{ width: "100%", resize: "vertical" }}
+                style={{
+                  width: "100%",
+                  resize: "vertical",
+                  borderRadius: 10,
+                  border: "1px solid var(--color-border)",
+                  padding: "12px 14px",
+                  fontSize: 14,
+                }}
                 placeholder="Paste the plain text of your CV here..."
                 value={pastedText}
                 onChange={(e) => setPastedText(e.target.value)}
@@ -317,7 +345,6 @@ export default function Home() {
             </form>
           )}
 
-          {/* Inline Error Message */}
           {errorMsg && (
             <div style={{ marginTop: 16 }}>
               <p className="error-text">{errorMsg}</p>
@@ -336,106 +363,169 @@ export default function Home() {
         </section>
       )}
 
-      {/* Step 2: Profile Summary & Target Role */}
+      {/* Step 2: Chatbot Conversation & Step Timeline Tree (Eduardo Alba Inspo) */}
       {step === 2 && profile && (
         <section>
-          {/* Profile Summary Card */}
-          <div className="card" style={{ marginBottom: 32 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <h2 style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.02em" }}>{profile.name}</h2>
-              <span style={{ fontSize: 13, color: "var(--color-fg-muted)", fontFamily: "var(--font-mono)" }}>
-                {profile.contact?.location || profile.contact?.email || ""}
+          {/* Timeline Tree */}
+          <div className="timeline-tree">
+            <div className="timeline-header">
+              <span className="timeline-title">
+                <span>✓</span> Built from CV in seconds
               </span>
+              <button
+                type="button"
+                onClick={handleReset}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 11,
+                  color: "var(--color-fg-muted)",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                RESTART
+              </button>
             </div>
 
-            <div className="summary-chips">
-              <span className="count-chip">
-                {profile.experience?.length || 0} Roles
-              </span>
-              <span className="count-chip">
-                {profile.projects?.length || 0} Projects
-              </span>
-              <span className="count-chip">
-                {profile.skills?.reduce(
-                  (acc, cat) => acc + (cat.items?.length || 0),
-                  0
-                ) || 0}{" "}
-                Skills
-              </span>
-              <span className="count-chip">
-                {profile.education?.length || 0} Education
-              </span>
-              {profile.certifications && profile.certifications.length > 0 && (
-                <span className="count-chip">
-                  {profile.certifications.length} Certifications
+            <div className="timeline-list">
+              <div className="timeline-line" />
+
+              <div className="timeline-item">
+                <span className="timeline-dot done" />
+                <span>Reading profile text</span>
+              </div>
+
+              <div className="timeline-item">
+                <span className="timeline-dot done" />
+                <span>
+                  Extracted {profile.experience?.length || 0} roles • {profile.projects?.length || 0} projects • {profile.skills?.reduce((a, c) => a + (c.items?.length || 0), 0) || 0} skills
                 </span>
+              </div>
+
+              <div className="timeline-item">
+                <span className="timeline-dot done" />
+                <span className="timeline-badge">
+                  <span style={{ color: "var(--color-live)", fontSize: 10 }}>●</span>
+                  <span>{profile.name}</span>
+                  <span style={{ color: "var(--color-fg-muted)" }}>candidate</span>
+                </span>
+              </div>
+
+              {isProcessing ? (
+                <div className="timeline-item">
+                  <span className="timeline-dot active" />
+                  <span style={{ color: "var(--color-accent-orange)", fontWeight: 500 }}>
+                    Tailoring bullets and verifying zero fabrication...
+                  </span>
+                </div>
+              ) : (
+                <div className="timeline-item">
+                  <span className="timeline-dot done" />
+                  <span style={{ color: "var(--color-fg-muted)" }}>Ready for target role</span>
+                </div>
               )}
             </div>
           </div>
 
-          {/* Clarifying Question Modal/Card */}
-          {clarifyingQuestion ? (
-            <div className="card" style={{ borderLeft: "4px solid var(--color-accent)" }}>
-              <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 8, letterSpacing: "-0.01em" }}>
-                One quick clarification
-              </h3>
-              <p style={{ color: "var(--color-fg)", marginBottom: 16, fontSize: 15 }}>
-                {clarifyingQuestion}
-              </p>
-              <input
-                type="text"
-                style={{ width: "100%", marginBottom: 16 }}
-                placeholder="Your answer (e.g. Frontend focused on React and performance)..."
-                value={clarificationAnswer}
-                onChange={(e) => setClarificationAnswer(e.target.value)}
-                disabled={isProcessing}
-                autoFocus
-              />
-              <div style={{ display: "flex", gap: 12 }}>
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={() => handleTailorSubmit(clarificationAnswer)}
-                  disabled={isProcessing || !clarificationAnswer.trim()}
-                >
-                  {isProcessing ? "Tailoring..." : "Continue"}
-                </button>
-              </div>
+          {/* AI Chatbot Message Bubble */}
+          <div className="chat-message-row">
+            <div className="chat-avatar">AI</div>
+            <div className="chat-bubble">
+              {clarifyingQuestion ? (
+                <div>
+                  <p style={{ fontSize: 14.5, color: "var(--color-fg)", marginBottom: 6 }}>
+                    Got it! One quick clarification to tailor your bullets with laser precision:
+                  </p>
+                  <p style={{ fontSize: 15, fontWeight: 500, color: "var(--color-fg)" }}>
+                    "{clarifyingQuestion}"
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <p style={{ fontSize: 15, color: "var(--color-fg)", lineHeight: 1.5 }}>
+                    Hey <strong>{profile.name.split(" ")[0]}</strong>, I've loaded your verified background. What role are you applying for?
+                  </p>
+                  <p style={{ fontSize: 13, color: "var(--color-fg-muted)", marginTop: 4 }}>
+                    Type the role below and I'll generate a one-page Harvard-style resume.
+                  </p>
+                </div>
+              )}
             </div>
-          ) : (
-            <div>
-              <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 16, letterSpacing: "-0.02em" }}>
-                What role are you applying for?
-              </h2>
+          </div>
 
-              <input
-                type="text"
-                style={{ width: "100%", marginBottom: 16 }}
-                placeholder="e.g. Staff Frontend Engineer, Product Designer..."
-                value={roleInput}
-                onChange={(e) => setRoleInput(e.target.value)}
-                disabled={isProcessing}
-                autoFocus
-              />
+          {/* Conversational Prompt Bar (Eduardo Alba Screenshot 3) */}
+          <form onSubmit={handlePromptFormSubmit} className="prompt-bar-container">
+            <div className="prompt-bar">
+              {clarifyingQuestion ? (
+                <input
+                  ref={promptInputRef}
+                  type="text"
+                  className="prompt-input"
+                  placeholder="Type your answer here..."
+                  value={clarificationAnswer}
+                  onChange={(e) => setClarificationAnswer(e.target.value)}
+                  disabled={isProcessing}
+                />
+              ) : (
+                <input
+                  ref={promptInputRef}
+                  type="text"
+                  className="prompt-input"
+                  placeholder="e.g. Senior Frontend Engineer, Full Stack Developer..."
+                  value={roleInput}
+                  onChange={(e) => setRoleInput(e.target.value)}
+                  disabled={isProcessing}
+                />
+              )}
 
-              <div style={{ marginBottom: 16 }}>
-                <button
-                  type="button"
-                  className="link-btn"
-                  style={{ marginTop: 0 }}
-                  onClick={() => setShowJobPosting(!showJobPosting)}
-                >
-                  {showJobPosting
-                    ? "Hide job description"
-                    : "+ Paste a job description (optional)"}
-                </button>
-              </div>
+              <button
+                type="submit"
+                className="prompt-submit-btn"
+                disabled={
+                  isProcessing ||
+                  (clarifyingQuestion ? !clarificationAnswer.trim() : !roleInput.trim())
+                }
+                title="Send"
+              >
+                {/* Arrow up SVG */}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5" />
+                  <polyline points="5 12 12 5 19 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="prompt-keyboard-hint">
+              Press ↵ to send
+            </div>
+          </form>
+
+          {/* Optional Job Description Accordion */}
+          {!clarifyingQuestion && (
+            <div style={{ marginTop: 24, textAlign: "center" }}>
+              <button
+                type="button"
+                className="link-btn"
+                onClick={() => setShowJobPosting(!showJobPosting)}
+              >
+                {showJobPosting
+                  ? "Hide job description"
+                  : "+ Have a specific job posting? Paste it here (optional)"}
+              </button>
 
               {showJobPosting && (
-                <div style={{ marginBottom: 20 }}>
+                <div style={{ marginTop: 14, textAlign: "left" }}>
                   <textarea
                     rows={6}
-                    style={{ width: "100%", resize: "vertical" }}
+                    style={{
+                      width: "100%",
+                      resize: "vertical",
+                      borderRadius: 10,
+                      border: "1px solid var(--color-border)",
+                      padding: "12px 14px",
+                      fontSize: 14,
+                    }}
                     placeholder="Paste the job description or requirements here to tailor specifically against them..."
                     value={jobPostingInput}
                     onChange={(e) => setJobPostingInput(e.target.value)}
@@ -443,26 +533,6 @@ export default function Home() {
                   />
                 </div>
               )}
-
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 24 }}>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={() => setStep(1)}
-                  disabled={isProcessing}
-                >
-                  Back
-                </button>
-
-                <button
-                  type="button"
-                  className="btn-primary btn-accent"
-                  onClick={() => handleTailorSubmit()}
-                  disabled={isProcessing || !roleInput.trim()}
-                >
-                  {isProcessing ? "Tailoring..." : "Tailor my resume"}
-                </button>
-              </div>
             </div>
           )}
 
@@ -483,7 +553,7 @@ export default function Home() {
               className="btn-secondary"
               onClick={() => setStep(2)}
             >
-              ← Edit Role
+              ← Edit Target Role
             </button>
             <button
               type="button"
@@ -508,7 +578,7 @@ export default function Home() {
                   What I cut and why
                 </h3>
                 <p style={{ fontSize: 13, color: "var(--color-fg-muted)", marginBottom: 16 }}>
-                  Condensed or omitted to ensure an academic one-page layout.
+                  Condensed or omitted to ensure a single-page Harvard layout.
                 </p>
 
                 {tailoredData.dropped && tailoredData.dropped.length > 0 ? (

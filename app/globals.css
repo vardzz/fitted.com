@@ -6,8 +6,8 @@
   --color-fg-subtle: #8a8a92;
   --color-border: #e4e4e7;
   --color-accent: #3071c4;
-  --color-accent-hover: #265da4;
-  --color-accent-soft: rgba(48, 113, 196, 0.08);
+  --color-accent-orange: #f95721;
+  --color-accent-orange-hover: #ea4b16;
   --color-live: #22a06b;
   --color-warn: #b45309;
   --color-error: #dc2626;
@@ -27,6 +27,7 @@
   --radius-full: 9999px;
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.03), 0 4px 16px rgba(0, 0, 0, 0.03);
+  --shadow-pill: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
   --shadow-sheet: 0 1px 3px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.06);
 }
 
@@ -44,12 +45,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
-  selection-background-color: var(--color-accent-soft);
-}
-
-::selection {
-  background-color: #dbeafe;
-  color: var(--color-fg);
 }
 
 button {
@@ -63,18 +58,6 @@ button {
 input, textarea {
   font-family: inherit;
   color: var(--color-fg);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
-  font-size: 15px;
-  outline: none;
-  transition: border-color var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
-}
-
-input:focus, textarea:focus {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-accent-soft);
 }
 
 /* Containers */
@@ -97,7 +80,7 @@ input:focus, textarea:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 48px;
+  margin-bottom: 40px;
 }
 
 .brand-wrapper {
@@ -125,7 +108,7 @@ input:focus, textarea:focus {
   font-weight: 500;
 }
 
-/* Status Chip Inspired by Eduardo Alba's Live Badge */
+/* Status Chip */
 .status-chip {
   display: inline-flex;
   align-items: center;
@@ -150,7 +133,7 @@ input:focus, textarea:focus {
 }
 
 .status-dot.active {
-  background-color: var(--color-accent);
+  background-color: var(--color-accent-orange);
   animation: twinkle 1.4s ease-in-out infinite;
 }
 
@@ -191,15 +174,15 @@ input:focus, textarea:focus {
   font-size: 16px;
   color: var(--color-fg-muted);
   line-height: 1.5;
-  margin-bottom: 36px;
+  margin-bottom: 32px;
 }
 
-/* Dropzone (Minimalist Eduardo Alba Aesthetic) */
+/* Dropzone */
 .dropzone {
   background: var(--color-surface);
   border: 1.5px dashed var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 52px 24px;
+  padding: 48px 24px;
   text-align: center;
   transition: all var(--t-fast) var(--ease-out);
   box-shadow: var(--shadow-card);
@@ -212,7 +195,7 @@ input:focus, textarea:focus {
 
 .dropzone.drag-active {
   border-color: var(--color-accent);
-  background: var(--color-accent-soft);
+  background: rgba(48, 113, 196, 0.06);
   transform: scale(1.008);
 }
 
@@ -237,10 +220,6 @@ input:focus, textarea:focus {
   transform: translateY(-1px);
 }
 
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-}
-
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -255,7 +234,7 @@ input:focus, textarea:focus {
   border: 1px solid var(--color-border);
   font-weight: 500;
   font-size: 14px;
-  height: 40px;
+  height: 38px;
   padding: 0 16px;
   border-radius: var(--radius-md);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
@@ -264,16 +243,6 @@ input:focus, textarea:focus {
 .btn-secondary:hover:not(:disabled) {
   background: #f4f4f5;
   border-color: #d4d4d8;
-}
-
-.btn-accent {
-  background: var(--color-accent);
-  color: #ffffff;
-}
-
-.btn-accent:hover:not(:disabled) {
-  background: var(--color-accent-hover);
-  transform: translateY(-1px);
 }
 
 .link-btn {
@@ -292,7 +261,189 @@ input:focus, textarea:focus {
   color: var(--color-fg);
 }
 
-/* Cards */
+/* Chat Prompt Bar (Eduardo Alba Screenshot 3) */
+.prompt-bar-container {
+  margin-top: 24px;
+}
+
+.prompt-bar {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 6px 8px 6px 20px;
+  box-shadow: var(--shadow-pill);
+  transition: border-color var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+}
+
+.prompt-bar:focus-within {
+  border-color: #d4d4d8;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.prompt-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 15px;
+  color: var(--color-fg);
+  font-family: inherit;
+}
+
+.prompt-submit-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-accent-orange);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--t-fast) var(--ease-out);
+}
+
+.prompt-submit-btn:hover:not(:disabled) {
+  background: var(--color-accent-orange-hover);
+  transform: scale(1.05);
+}
+
+.prompt-submit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.prompt-keyboard-hint {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: #a1a1aa;
+  text-align: right;
+  margin-top: 8px;
+  padding-right: 12px;
+  text-transform: uppercase;
+}
+
+/* Chat Bubble UI */
+.chat-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f4f4f5;
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-fg);
+  flex-shrink: 0;
+}
+
+.chat-message-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  animation: page-in var(--t-base) var(--ease-out);
+}
+
+.chat-bubble {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  border-top-left-radius: 4px;
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+  max-width: 540px;
+}
+
+/* Step Timeline Tree (Eduardo Alba Screenshot 1 & 2) */
+.timeline-tree {
+  margin-bottom: 32px;
+  padding-left: 4px;
+  animation: page-in var(--t-base) var(--ease-out);
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.timeline-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-fg-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timeline-list {
+  position: relative;
+  padding-left: 18px;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 3.5px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background-color: #e4e4e7;
+}
+
+.timeline-item {
+  position: relative;
+  font-size: 13.5px;
+  color: var(--color-fg);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -18px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #a1a1aa;
+}
+
+.timeline-dot.done {
+  background-color: var(--color-fg);
+}
+
+.timeline-dot.active {
+  background-color: var(--color-accent-orange);
+  animation: twinkle 1.2s ease-in-out infinite;
+}
+
+.timeline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-fg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+/* Cards & Result grid */
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -301,26 +452,6 @@ input:focus, textarea:focus {
   box-shadow: var(--shadow-card);
 }
 
-/* Profile summary */
-.summary-chips {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 12px;
-}
-
-.count-chip {
-  background: #f4f4f5;
-  border: 1px solid var(--color-border);
-  padding: 5px 12px;
-  border-radius: var(--radius-full);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-fg);
-}
-
-/* Step 3 Layout */
 .result-grid {
   display: grid;
   grid-template-columns: 1fr;
