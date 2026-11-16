@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Profile } from "@/lib/types";
+import { Profile, TailoredResume } from "@/lib/types";
 
 export default function Home() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -16,6 +16,18 @@ export default function Home() {
   // Paste text toggle
   const [showPasteFallback, setShowPasteFallback] = useState<boolean>(false);
   const [pastedText, setPastedText] = useState<string>("");
+
+  // Step 2: Role and Job Posting
+  const [roleInput, setRoleInput] = useState<string>("");
+  const [showJobPosting, setShowJobPosting] = useState<boolean>(false);
+  const [jobPostingInput, setJobPostingInput] = useState<string>("");
+
+  // Clarification state
+  const [clarifyingQuestion, setClarifyingQuestion] = useState<string | null>(null);
+  const [clarificationAnswer, setClarificationAnswer] = useState<string>("");
+
+  // Step 3: Tailored result
+  const [tailoredData, setTailoredData] = useState<TailoredResume | null>(null);
 
   // Drag & drop state
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
@@ -114,6 +126,53 @@ export default function Home() {
       return;
     }
     processCvText(pastedText);
+  };
+
+  // Step 2 submit: Tailor request
+  const handleTailorSubmit = async (clarificationValue?: string) => {
+    if (!roleInput.trim()) {
+      setErrorMsg("Please enter the role you are applying for.");
+      return;
+    }
+
+    setErrorMsg(null);
+    setIsProcessing(true);
+    setStatusText(`Tailoring for ${roleInput.trim()}`);
+
+    try {
+      const res = await fetch("/api/tailor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          profile,
+          role: roleInput.trim(),
+          posting: jobPostingInput.trim() || undefined,
+          clarification: clarificationValue || undefined,
+          cvText,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to tailor resume.");
+      }
+
+      const tailored: TailoredResume = data.tailored;
+
+      if (tailored.needs_clarification && tailored.clarifying_question) {
+        setClarifyingQuestion(tailored.clarifying_question);
+        setStatusText("Clarification needed");
+      } else {
+        setTailoredData(tailored);
+        setStatusText("Ready");
+        setStep(3);
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || "Failed to tailor resume.");
+      setStatusText("Error");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -223,11 +282,12 @@ export default function Home() {
         </section>
       )}
 
-      {/* Step 2 Placeholder - will be expanded in Phase 3 */}
+      {/* Step 2: Profile Summary & Target Role */}
       {step === 2 && profile && (
         <section>
-          <div className="card" style={{ marginBottom: 24 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 600 }}>{profile.name}</h2>
+          {/* Profile Summary Card */}
+          <div className="card" style={{ marginBottom: 32 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 600 }}>{profile.name}</h2>
             <div className="summary-chips">
               <span className="count-chip">
                 {profile.experience?.length || 0} Roles
@@ -236,14 +296,121 @@ export default function Home() {
                 {profile.projects?.length || 0} Projects
               </span>
               <span className="count-chip">
-                {profile.skills?.reduce((acc, cat) => acc + (cat.items?.length || 0), 0) || 0} Skills
+                {profile.skills?.reduce(
+                  (acc, cat) => acc + (cat.items?.length || 0),
+                  0
+                ) || 0}{" "}
+                Skills
               </span>
               <span className="count-chip">
                 {profile.education?.length || 0} Education
               </span>
             </div>
           </div>
-          <p style={{ color: "var(--muted)" }}>Proceeding to role question...</p>
+
+          {/* Clarifying Question Modal/Card */}
+          {clarifyingQuestion ? (
+            <div className="card" style={{ borderLeft: "4px solid var(--accent)" }}>
+              <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 8 }}>
+                One quick clarification
+              </h3>
+              <p style={{ color: "var(--ink)", marginBottom: 16 }}>
+                {clarifyingQuestion}
+              </p>
+              <input
+                type="text"
+                style={{ width: "100%", marginBottom: 16 }}
+                placeholder="Your answer (e.g. Frontend focused on React and performance)..."
+                value={clarificationAnswer}
+                onChange={(e) => setClarificationAnswer(e.target.value)}
+                disabled={isProcessing}
+              />
+              <div style={{ display: "flex", gap: 12 }}>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => handleTailorSubmit(clarificationAnswer)}
+                  disabled={isProcessing || !clarificationAnswer.trim()}
+                >
+                  {isProcessing ? "Tailoring..." : "Continue"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <h2 className="step-heading" style={{ fontSize: 24, fontWeight: 600, marginBottom: 16 }}>
+                What role are you applying for?
+              </h2>
+
+              <input
+                type="text"
+                style={{ width: "100%", marginBottom: 16 }}
+                placeholder="e.g. Senior Frontend Engineer"
+                value={roleInput}
+                onChange={(e) => setRoleInput(e.target.value)}
+                disabled={isProcessing}
+              />
+
+              <div style={{ marginBottom: 16 }}>
+                <button
+                  type="button"
+                  className="link-btn"
+                  style={{ marginTop: 0 }}
+                  onClick={() => setShowJobPosting(!showJobPosting)}
+                >
+                  {showJobPosting
+                    ? "Hide job description"
+                    : "+ Paste a job description (optional)"}
+                </button>
+              </div>
+
+              {showJobPosting && (
+                <div style={{ marginBottom: 20 }}>
+                  <textarea
+                    rows={6}
+                    style={{ width: "100%", resize: "vertical" }}
+                    placeholder="Paste the job description or requirements here to tailor specifically against them..."
+                    value={jobPostingInput}
+                    onChange={(e) => setJobPostingInput(e.target.value)}
+                    disabled={isProcessing}
+                  />
+                </div>
+              )}
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setStep(1)}
+                  disabled={isProcessing}
+                >
+                  Back
+                </button>
+
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => handleTailorSubmit()}
+                  disabled={isProcessing || !roleInput.trim()}
+                >
+                  {isProcessing ? "Tailoring..." : "Tailor my resume"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {errorMsg && (
+            <p className="error-text" style={{ marginTop: 16 }}>
+              {errorMsg}
+            </p>
+          )}
+        </section>
+      )}
+
+      {/* Step 3 Placeholder - will be populated in Phase 4 */}
+      {step === 3 && tailoredData && (
+        <section>
+          <h2>Tailored Resume Preview</h2>
         </section>
       )}
     </div>
