@@ -70,16 +70,17 @@ const styles = StyleSheet.create({
   header: {
     width: "100%",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 10,
   },
   nameWrapper: {
     width: "100%",
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: 8,
   },
   name: {
     fontFamily: "Times-Bold",
-    fontSize: 21,
+    fontSize: 20,
+    lineHeight: 1.25,
     textAlign: "center",
   },
   contactLine: {
@@ -89,6 +90,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     fontSize: 8.5,
+    lineHeight: 1.25,
+    marginTop: 4,
+    marginBottom: 6,
   },
   contactItem: {
     flexDirection: "row",
