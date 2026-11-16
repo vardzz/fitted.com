@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import { TailoredResume } from "@/lib/types";
 import ResumePdf from "./ResumePdf";
 
-// Dynamic import with ssr: false to prevent canvas/node errors in SSR
 const PDFViewer = dynamic(
   () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
   {
@@ -17,8 +16,9 @@ const PDFViewer = dynamic(
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "var(--muted)",
-          fontSize: 14,
+          color: "var(--color-fg-muted)",
+          fontSize: 13,
+          fontFamily: "var(--font-mono)",
         }}
       >
         Rendering preview...
@@ -60,7 +60,7 @@ export default function ResumeViewer({ tailored, role }: ResumeViewerProps) {
 
   return (
     <div>
-      {/* Top action row on mobile / result toolbar */}
+      {/* Top action bar */}
       <div
         style={{
           display: "flex",
@@ -72,9 +72,11 @@ export default function ResumeViewer({ tailored, role }: ResumeViewerProps) {
         }}
       >
         <div>
-          <h2 style={{ fontSize: 20, fontWeight: 600 }}>One-Page Resume</h2>
-          <p style={{ fontSize: 13, color: "var(--muted)" }}>
-            Harvard style • Selectable text PDF
+          <h2 style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.02em" }}>
+            Tailored Harvard Resume
+          </h2>
+          <p style={{ fontSize: 13, color: "var(--color-fg-muted)" }}>
+            A4 • One-page • Selectable text
           </p>
         </div>
 
@@ -86,7 +88,7 @@ export default function ResumeViewer({ tailored, role }: ResumeViewerProps) {
             {({ loading }) => (
               <button
                 type="button"
-                className="btn-primary"
+                className="btn-primary btn-accent"
                 onClick={handleDownloadClick}
                 disabled={loading}
               >
@@ -97,7 +99,7 @@ export default function ResumeViewer({ tailored, role }: ResumeViewerProps) {
         )}
       </div>
 
-      {/* PDF Viewer Sheet */}
+      {/* PDF Preview Sheet */}
       <div className="pdf-preview-sheet">
         {isClient && (
           <PDFViewer

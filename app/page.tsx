@@ -9,13 +9,14 @@ const ResumeViewer = dynamic(() => import("@/components/ResumeViewer"), {
   loading: () => (
     <div
       style={{
-        padding: 48,
+        padding: 64,
         textAlign: "center",
-        color: "var(--muted)",
-        fontSize: 15,
+        color: "var(--color-fg-muted)",
+        fontSize: 14,
+        fontFamily: "var(--font-mono)",
       }}
     >
-      Loading resume viewer...
+      Rendering PDF document...
     </div>
   ),
 });
@@ -145,7 +146,6 @@ export default function Home() {
     processCvText(pastedText);
   };
 
-  // Step 2 submit: Tailor request
   const handleTailorSubmit = async (clarificationValue?: string) => {
     if (!roleInput.trim()) {
       setErrorMsg("Please enter the role you are applying for.");
@@ -210,13 +210,17 @@ export default function Home() {
     <div className={step === 3 ? "container-wide" : "container-narrow"}>
       {/* Header bar */}
       <header className="header-bar">
-        <span
-          className="wordmark"
-          onClick={handleReset}
-          style={{ cursor: "pointer" }}
-        >
-          Fitted
-        </span>
+        <div className="brand-wrapper">
+          <span
+            className="wordmark"
+            onClick={handleReset}
+            style={{ cursor: "pointer" }}
+          >
+            Fitted
+          </span>
+          <span className="brand-tag">one-page</span>
+        </div>
+
         <div className="status-chip" aria-live="polite">
           <span
             className={`status-dot ${
@@ -230,8 +234,10 @@ export default function Home() {
       {/* Step 1: Upload or Paste CV */}
       {step === 1 && (
         <section>
-          <h1 className="page-title">Tailor your resume in seconds</h1>
-          <p className="page-tagline">Your CV, cut to fit the role.</p>
+          <h1 className="page-title">Your CV, cut to fit the role.</h1>
+          <p className="page-tagline">
+            Upload your CV. We extract facts, tailor bullets to your target role, and render an academic Harvard-style one-page PDF.
+          </p>
 
           <div
             className={`dropzone ${isDragOver ? "drag-active" : ""}`}
@@ -251,8 +257,19 @@ export default function Home() {
               disabled={isProcessing}
             />
 
-            <p style={{ fontSize: 16, marginBottom: 16, color: "var(--ink)" }}>
-              Drag and drop your CV as a PDF, or
+            {/* Subtle Document Icon */}
+            <div style={{ marginBottom: 14, color: "var(--color-fg-muted)" }}>
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "0 auto" }}>
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <line x1="10" y1="9" x2="8" y2="9" />
+              </svg>
+            </div>
+
+            <p style={{ fontSize: 15, marginBottom: 16, color: "var(--color-fg)", fontWeight: 500 }}>
+              Drop your CV PDF here, or
             </p>
 
             <button
@@ -261,7 +278,7 @@ export default function Home() {
               onClick={() => fileInputRef.current?.click()}
               disabled={isProcessing}
             >
-              {isProcessing ? "Processing..." : "Choose PDF"}
+              {isProcessing ? "Processing..." : "Choose PDF file"}
             </button>
 
             <div style={{ marginTop: 20 }}>
@@ -271,8 +288,8 @@ export default function Home() {
                 onClick={() => setShowPasteFallback(!showPasteFallback)}
               >
                 {showPasteFallback
-                  ? "Hide paste text box"
-                  : "or paste your CV text"}
+                  ? "Hide paste textarea"
+                  : "or paste your CV plain text"}
               </button>
             </div>
           </div>
@@ -324,7 +341,13 @@ export default function Home() {
         <section>
           {/* Profile Summary Card */}
           <div className="card" style={{ marginBottom: 32 }}>
-            <h2 style={{ fontSize: 22, fontWeight: 600 }}>{profile.name}</h2>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <h2 style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.02em" }}>{profile.name}</h2>
+              <span style={{ fontSize: 13, color: "var(--color-fg-muted)", fontFamily: "var(--font-mono)" }}>
+                {profile.contact?.location || profile.contact?.email || ""}
+              </span>
+            </div>
+
             <div className="summary-chips">
               <span className="count-chip">
                 {profile.experience?.length || 0} Roles
@@ -342,16 +365,21 @@ export default function Home() {
               <span className="count-chip">
                 {profile.education?.length || 0} Education
               </span>
+              {profile.certifications && profile.certifications.length > 0 && (
+                <span className="count-chip">
+                  {profile.certifications.length} Certifications
+                </span>
+              )}
             </div>
           </div>
 
           {/* Clarifying Question Modal/Card */}
           {clarifyingQuestion ? (
-            <div className="card" style={{ borderLeft: "4px solid var(--accent)" }}>
-              <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 8 }}>
+            <div className="card" style={{ borderLeft: "4px solid var(--color-accent)" }}>
+              <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 8, letterSpacing: "-0.01em" }}>
                 One quick clarification
               </h3>
-              <p style={{ color: "var(--ink)", marginBottom: 16 }}>
+              <p style={{ color: "var(--color-fg)", marginBottom: 16, fontSize: 15 }}>
                 {clarifyingQuestion}
               </p>
               <input
@@ -361,6 +389,7 @@ export default function Home() {
                 value={clarificationAnswer}
                 onChange={(e) => setClarificationAnswer(e.target.value)}
                 disabled={isProcessing}
+                autoFocus
               />
               <div style={{ display: "flex", gap: 12 }}>
                 <button
@@ -375,17 +404,18 @@ export default function Home() {
             </div>
           ) : (
             <div>
-              <h2 className="step-heading" style={{ fontSize: 24, fontWeight: 600, marginBottom: 16 }}>
+              <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 16, letterSpacing: "-0.02em" }}>
                 What role are you applying for?
               </h2>
 
               <input
                 type="text"
                 style={{ width: "100%", marginBottom: 16 }}
-                placeholder="e.g. Senior Frontend Engineer"
+                placeholder="e.g. Staff Frontend Engineer, Product Designer..."
                 value={roleInput}
                 onChange={(e) => setRoleInput(e.target.value)}
                 disabled={isProcessing}
+                autoFocus
               />
 
               <div style={{ marginBottom: 16 }}>
@@ -414,7 +444,7 @@ export default function Home() {
                 </div>
               )}
 
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 24 }}>
                 <button
                   type="button"
                   className="btn-secondary"
@@ -426,7 +456,7 @@ export default function Home() {
 
                 <button
                   type="button"
-                  className="btn-primary"
+                  className="btn-primary btn-accent"
                   onClick={() => handleTailorSubmit()}
                   disabled={isProcessing || !roleInput.trim()}
                 >
@@ -453,7 +483,7 @@ export default function Home() {
               className="btn-secondary"
               onClick={() => setStep(2)}
             >
-              ← Edit Role / Job Description
+              ← Edit Role
             </button>
             <button
               type="button"
@@ -471,14 +501,14 @@ export default function Home() {
             </div>
 
             {/* Right Column: Dropped items & Gaps panels */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               {/* What I cut and why */}
               <div className="card">
-                <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 6 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4, letterSpacing: "-0.01em" }}>
                   What I cut and why
                 </h3>
-                <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 16 }}>
-                  Items dropped or condensed to fit a compact Harvard-style one-page layout.
+                <p style={{ fontSize: 13, color: "var(--color-fg-muted)", marginBottom: 16 }}>
+                  Condensed or omitted to ensure an academic one-page layout.
                 </p>
 
                 {tailoredData.dropped && tailoredData.dropped.length > 0 ? (
@@ -490,9 +520,9 @@ export default function Home() {
                           display: "flex",
                           alignItems: "flex-start",
                           gap: 10,
-                          fontSize: 14,
+                          fontSize: 13.5,
                           lineHeight: 1.5,
-                          marginBottom: 12,
+                          marginBottom: 10,
                         }}
                       >
                         <span
@@ -500,14 +530,14 @@ export default function Home() {
                             width: 6,
                             height: 6,
                             borderRadius: "50%",
-                            backgroundColor: "var(--muted)",
+                            backgroundColor: "var(--color-fg-muted)",
                             marginTop: 7,
                             flexShrink: 0,
                           }}
                         />
                         <div>
                           <strong>{cut.item}:</strong>{" "}
-                          <span style={{ color: "var(--muted)" }}>
+                          <span style={{ color: "var(--color-fg-muted)" }}>
                             {cut.reason}
                           </span>
                         </div>
@@ -515,19 +545,19 @@ export default function Home() {
                     ))}
                   </ul>
                 ) : (
-                  <p style={{ fontSize: 14, color: "var(--muted)" }}>
-                    All relevant profile items were fitted into the one-page resume.
+                  <p style={{ fontSize: 13.5, color: "var(--color-fg-muted)" }}>
+                    All profile items were fitted into the one-page resume.
                   </p>
                 )}
               </div>
 
               {/* Not shown in your CV (Gaps) */}
               <div className="card">
-                <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 6 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4, letterSpacing: "-0.01em" }}>
                   Not shown in your CV
                 </h3>
-                <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 16 }}>
-                  Target role requirements not backed by your CV. We never invent facts.
+                <p style={{ fontSize: 13, color: "var(--color-fg-muted)", marginBottom: 16 }}>
+                  Role requirements not found in your CV. We never fabricate facts.
                 </p>
 
                 {tailoredData.gaps && tailoredData.gaps.length > 0 ? (
@@ -539,9 +569,9 @@ export default function Home() {
                           display: "flex",
                           alignItems: "flex-start",
                           gap: 10,
-                          fontSize: 14,
+                          fontSize: 13.5,
                           lineHeight: 1.5,
-                          marginBottom: 10,
+                          marginBottom: 8,
                         }}
                       >
                         <span
@@ -549,18 +579,18 @@ export default function Home() {
                             width: 6,
                             height: 6,
                             borderRadius: "50%",
-                            backgroundColor: "var(--warn)",
+                            backgroundColor: "var(--color-warn)",
                             marginTop: 7,
                             flexShrink: 0,
                           }}
                         />
-                        <span style={{ color: "var(--ink)" }}>{gap}</span>
+                        <span style={{ color: "var(--color-fg)" }}>{gap}</span>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p style={{ fontSize: 14, color: "var(--ok)", fontWeight: 500 }}>
-                    No significant gaps identified for this role!
+                  <p style={{ fontSize: 13.5, color: "var(--color-live)", fontWeight: 500 }}>
+                    No missing requirements identified for this role!
                   </p>
                 )}
               </div>
