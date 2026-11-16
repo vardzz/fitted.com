@@ -1,36 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
-import { TailoredResume } from "@/lib/types";
-import ResumePdf from "./ResumePdf";
-
-const PDFViewer = dynamic(
-  () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        style={{
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "var(--color-fg-muted)",
-          fontSize: 13,
-          fontFamily: "var(--font-mono)",
-        }}
-      >
-        Rendering preview...
-      </div>
-    ),
-  }
-);
-
-const PDFDownloadLink = dynamic(
-  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
-  { ssr: false }
-);
+import type { TailoredResume } from "@/lib/types";
 
 interface ResumeViewerProps {
   tailored: TailoredResume;
@@ -40,9 +11,29 @@ interface ResumeViewerProps {
 export default function ResumeViewer({ tailored, role }: ResumeViewerProps) {
   const [isClient, setIsClient] = useState(false);
   const [downloadSaved, setDownloadSaved] = useState(false);
+  const [pdfModules, setPdfModules] = useState<{
+    PDFViewer: any;
+    PDFDownloadLink: any;
+    ResumePdf: any;
+  } | null>(null);
 
   useEffect(() => {
     setIsClient(true);
+    // Pure client-side load to prevent any Next.js server webpack chunk collisions
+    Promise.all([
+      import("@react-pdf/renderer"),
+      import("./ResumePdf"),
+    ])
+      .then(([rpdf, resumePdfMod]) => {
+        setPdfModules({
+          PDFViewer: rpdf.PDFViewer,
+          PDFDownloadLink: rpdf.PDFDownloadLink,
+          ResumePdf: resumePdfMod.default,
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to load PDF renderer:", err);
+      });
   }, []);
 
   if (!tailored.resume) {
@@ -57,6 +48,10 @@ export default function ResumeViewer({ tailored, role }: ResumeViewerProps) {
     setDownloadSaved(true);
     setTimeout(() => setDownloadSaved(false), 2000);
   };
+
+  const PDFViewer = pdfModules?.PDFViewer;
+  const PDFDownloadLink = pdfModules?.PDFDownloadLink;
+  const ResumePdf = pdfModules?.ResumePdf;
 
   return (
     <div>
@@ -80,15 +75,16 @@ export default function ResumeViewer({ tailored, role }: ResumeViewerProps) {
           </p>
         </div>
 
-        {isClient && (
+        {isClient && PDFDownloadLink && ResumePdf && (
           <PDFDownloadLink
             document={<ResumePdf data={tailored.resume} />}
             fileName={fileName}
           >
-            {({ loading }) => (
+            {({ loading }: { loading: boolean }) => (
               <button
                 type="button"
-                className="btn-primary btn-accent"
+                className="btn-primary"
+                style={{ background: "var(--color-accent-orange)" }}
                 onClick={handleDownloadClick}
                 disabled={loading}
               >
@@ -101,7 +97,7 @@ export default function ResumeViewer({ tailored, role }: ResumeViewerProps) {
 
       {/* PDF Preview Sheet */}
       <div className="pdf-preview-sheet">
-        {isClient && (
+        {isClient && PDFViewer && ResumePdf ? (
           <PDFViewer
             width="100%"
             height="100%"
@@ -110,6 +106,20 @@ export default function ResumeViewer({ tailored, role }: ResumeViewerProps) {
           >
             <ResumePdf data={tailored.resume} />
           </PDFViewer>
+        ) : (
+          <div
+            style={{
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--color-fg-muted)",
+              fontFamily: "var(--font-mono)",
+              fontSize: 13,
+            }}
+          >
+            Rendering Harvard PDF preview...
+          </div>
         )}
       </div>
     </div>
