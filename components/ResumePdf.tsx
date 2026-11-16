@@ -68,16 +68,22 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
   header: {
+    width: "100%",
     alignItems: "center",
-    marginBottom: 5,
+    marginBottom: 8,
+  },
+  nameWrapper: {
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 4,
   },
   name: {
     fontFamily: "Times-Bold",
     fontSize: 21,
-    letterSpacing: -0.2,
-    marginBottom: 2.5,
+    textAlign: "center",
   },
   contactLine: {
+    width: "100%",
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
@@ -227,7 +233,9 @@ export default function ResumePdf({
       <Page size="A4" style={styles.page}>
         {/* Header Block */}
         <View style={styles.header}>
-          <Text style={styles.name}>{name}</Text>
+          <View style={styles.nameWrapper}>
+            <Text style={styles.name}>{name}</Text>
+          </View>
           {contactElements.length > 0 && (
             <View style={styles.contactLine}>
               {contactElements.map((item, idx) => (
