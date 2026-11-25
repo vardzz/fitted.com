@@ -59,12 +59,19 @@ export default function Home() {
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const promptInputRef = useRef<HTMLInputElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (promptInputRef.current) {
       promptInputRef.current.focus();
     }
-  }, [step, clarifyingQuestion]);
+  }, [step, clarifyingQuestion, messages.length]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isProcessing, profile]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -324,7 +331,7 @@ export default function Home() {
 
   return (
     <div
-      className={step === 3 ? "container-wide" : "container-narrow"}
+      className={step === 3 ? "container-wide" : `container-narrow ${messages.length > 0 ? "has-chat" : ""}`}
       onDragOver={(e) => {
         e.preventDefault();
         if (step === 1) setIsDragOver(true);
@@ -411,6 +418,9 @@ export default function Home() {
               </div>
             </div>
           )}
+
+          {/* Anchor for auto-scroll */}
+          <div ref={messagesEndRef} />
         </div>
       )}
 
@@ -481,101 +491,103 @@ export default function Home() {
         </div>
       )}
 
-      {/* Persistent Chatbox below */}
+      {/* Chatbox: inline below hero at start, fixed at bottom once message is sent */}
       {step !== 3 && (
-        <div className="prompt-bar-container">
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept="application/pdf,.pdf"
-            style={{ display: "none" }}
-            onChange={handleFileSelect}
-            disabled={isProcessing}
-          />
-
-          <form
-            onSubmit={handleChatboxSubmit}
-            className={`prompt-bar ${isDragOver ? "drag-over" : ""}`}
-          >
-            {/* Attachment Button for Step 1 */}
-            {step === 1 && (
-              <button
-                type="button"
-                className="prompt-attach-btn"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isProcessing}
-                title="Attach CV PDF file"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                </svg>
-              </button>
-            )}
-
-            {/* Attached File Pill Badge inside the chatbox */}
-            {step === 1 && attachedFile && (
-              <div className="attached-file-badge">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
-                <span>{attachedFile.name}</span>
-                <button
-                  type="button"
-                  className="attached-file-remove"
-                  onClick={() => setAttachedFile(null)}
-                  title="Remove file"
-                >
-                  ✕
-                </button>
-              </div>
-            )}
-
-            {/* Text Input */}
+        <div className={messages.length > 0 ? "chatbox-fixed-bottom" : "prompt-bar-container"}>
+          <div className={messages.length > 0 ? "chatbox-fixed-inner" : ""}>
             <input
-              ref={promptInputRef}
-              type="text"
-              className="prompt-input"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              type="file"
+              ref={fileInputRef}
+              accept="application/pdf,.pdf"
+              style={{ display: "none" }}
+              onChange={handleFileSelect}
               disabled={isProcessing}
-              placeholder={
-                step === 1
-                  ? attachedFile
-                    ? "Press ↵ or send to parse your CV..."
-                    : "Attach CV PDF or type/paste your CV text here..."
-                  : clarifyingQuestion
-                  ? "Type your clarification..."
-                  : "e.g. Senior Frontend Engineer, Full Stack Developer..."
-              }
             />
 
-            {/* Orange Circle Submit Button with Upward Arrow */}
-            <button
-              type="submit"
-              className="prompt-submit-btn"
-              disabled={
-                isProcessing ||
-                (step === 1 ? !attachedFile && !inputText.trim() : !inputText.trim())
-              }
-              title="Send"
+            <form
+              onSubmit={handleChatboxSubmit}
+              className={`prompt-bar ${isDragOver ? "drag-over" : ""}`}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="19" x2="12" y2="5" />
-                <polyline points="5 12 12 5 19 12" />
-              </svg>
-            </button>
-          </form>
+              {/* Attachment Button for Step 1 */}
+              {step === 1 && (
+                <button
+                  type="button"
+                  className="prompt-attach-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isProcessing}
+                  title="Attach CV PDF file"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                  </svg>
+                </button>
+              )}
 
-          <div className="prompt-keyboard-hint">
-            Press ↵ to send
+              {/* Attached File Pill Badge inside the chatbox */}
+              {step === 1 && attachedFile && (
+                <div className="attached-file-badge">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <span>{attachedFile.name}</span>
+                  <button
+                    type="button"
+                    className="attached-file-remove"
+                    onClick={() => setAttachedFile(null)}
+                    title="Remove file"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {/* Text Input */}
+              <input
+                ref={promptInputRef}
+                type="text"
+                className="prompt-input"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                disabled={isProcessing}
+                placeholder={
+                  step === 1
+                    ? attachedFile
+                      ? "Press ↵ or send to parse your CV..."
+                      : "Attach CV PDF or type/paste your CV text here..."
+                    : clarifyingQuestion
+                    ? "Type your clarification..."
+                    : "e.g. Senior Frontend Engineer, Full Stack Developer..."
+                }
+              />
+
+              {/* Orange Circle Submit Button with Upward Arrow */}
+              <button
+                type="submit"
+                className="prompt-submit-btn"
+                disabled={
+                  isProcessing ||
+                  (step === 1 ? !attachedFile && !inputText.trim() : !inputText.trim())
+                }
+                title="Send"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5" />
+                  <polyline points="5 12 12 5 19 12" />
+                </svg>
+              </button>
+            </form>
+
+            <div className="prompt-keyboard-hint">
+              Press ↵ to send
+            </div>
+
+            {errorMsg && (
+              <p className="error-text" style={{ textAlign: "center", marginTop: 12 }}>
+                {errorMsg}
+              </p>
+            )}
           </div>
-
-          {errorMsg && (
-            <p className="error-text" style={{ textAlign: "center", marginTop: 12 }}>
-              {errorMsg}
-            </p>
-          )}
         </div>
       )}
 
