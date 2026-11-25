@@ -52,10 +52,8 @@ export default function Home() {
   const [inputText, setInputText] = useState<string>("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
 
-  // Role and Job Posting
+  // Target Role
   const [roleInput, setRoleInput] = useState<string>("");
-  const [showJobPosting, setShowJobPosting] = useState<boolean>(false);
-  const [jobPostingInput, setJobPostingInput] = useState<string>("");
 
   // Clarification
   const [clarifyingQuestion, setClarifyingQuestion] = useState<string | null>(null);
@@ -194,7 +192,6 @@ export default function Home() {
         body: JSON.stringify({
           profile,
           role: activeRole.trim(),
-          posting: jobPostingInput.trim() || undefined,
           clarification: clarificationValue || undefined,
           cvText,
         }),
@@ -323,7 +320,6 @@ export default function Home() {
     setCvText("");
     setTailoredData(null);
     setRoleInput("");
-    setJobPostingInput("");
     setClarifyingQuestion(null);
     setInputText("");
     setAttachedFile(null);
@@ -558,42 +554,6 @@ export default function Home() {
           <div className="prompt-keyboard-hint">
             Press ↵ to send
           </div>
-
-          {/* Optional Job Description Accordion for Step 2 */}
-          {step === 2 && !clarifyingQuestion && (
-            <div style={{ marginTop: 18, textAlign: "center" }}>
-              <button
-                type="button"
-                className="link-btn"
-                onClick={() => setShowJobPosting(!showJobPosting)}
-              >
-                {showJobPosting
-                  ? "Hide job description"
-                  : "+ Have a specific job posting? Paste it here (optional)"}
-              </button>
-
-              {showJobPosting && (
-                <div style={{ marginTop: 12, textAlign: "left" }}>
-                  <textarea
-                    rows={5}
-                    style={{
-                      width: "100%",
-                      resize: "vertical",
-                      borderRadius: 10,
-                      border: "1px solid var(--color-border)",
-                      padding: "10px 14px",
-                      fontSize: 13.5,
-                      background: "#ffffff",
-                    }}
-                    placeholder="Paste the job description or requirements here to tailor specifically against them..."
-                    value={jobPostingInput}
-                    onChange={(e) => setJobPostingInput(e.target.value)}
-                    disabled={isProcessing}
-                  />
-                </div>
-              )}
-            </div>
-          )}
 
           {errorMsg && (
             <p className="error-text" style={{ textAlign: "center" }}>
