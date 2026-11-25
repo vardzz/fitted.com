@@ -399,6 +399,18 @@ export default function Home() {
               </div>
             </div>
           ))}
+
+          {/* Typing / Thinking Ellipsis Indicator when AI is preparing an answer */}
+          {isProcessing && (
+            <div className="chat-message-row">
+              <div className="chat-avatar">AI</div>
+              <div className="chat-bubble typing-bubble" title="AI is thinking...">
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+              </div>
+            </div>
+          )}
         </div>
       )}
 
