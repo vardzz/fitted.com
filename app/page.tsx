@@ -297,21 +297,18 @@ export default function Home() {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setAttachedFile(file);
-      setErrorMsg(null);
+    if (file && step === 1) {
+      handleFileUpload(file);
     }
+    e.target.value = "";
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) {
-      if (step === 1) {
-        setAttachedFile(file);
-        setErrorMsg(null);
-      }
+    if (file && step === 1) {
+      handleFileUpload(file);
     }
   };
 
@@ -339,6 +336,16 @@ export default function Home() {
       onDragLeave={() => setIsDragOver(false)}
       onDrop={handleDrop}
     >
+      {/* Hidden file input for uploading CV PDF */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept=".pdf,application/pdf"
+        style={{ display: "none" }}
+        onChange={handleFileSelect}
+        disabled={isProcessing}
+      />
+
       {/* Start Interface Header */}
       {step === 1 && messages.length === 0 && (
         <div className="claude-onboarding" style={{ padding: "40px 0 28px" }}>
@@ -495,15 +502,6 @@ export default function Home() {
       {step !== 3 && (
         <div className={messages.length > 0 ? "chatbox-fixed-bottom" : "prompt-bar-container"}>
           <div className={messages.length > 0 ? "chatbox-fixed-inner" : ""}>
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept="application/pdf,.pdf"
-              style={{ display: "none" }}
-              onChange={handleFileSelect}
-              disabled={isProcessing}
-            />
-
             <form
               onSubmit={handleChatboxSubmit}
               className={`prompt-bar ${isDragOver ? "drag-over" : ""}`}
