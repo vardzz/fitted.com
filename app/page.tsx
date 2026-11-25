@@ -55,23 +55,16 @@ export default function Home() {
   // Tailored Result
   const [tailoredData, setTailoredData] = useState<TailoredResume | null>(null);
 
-  // Drag & drop & references
+  // Drag & drop
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const promptInputRef = useRef<HTMLTextAreaElement | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const promptInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (promptInputRef.current) {
       promptInputRef.current.focus();
     }
-  }, [step, clarifyingQuestion, messages.length]);
-
-  useEffect(() => {
-    if (messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages, isProcessing, profile]);
+  }, [step, clarifyingQuestion]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -327,27 +320,295 @@ export default function Home() {
     setStatusText("Ready");
     setErrorMsg(null);
     setMessages([]);
-    if (promptInputRef.current) {
-      promptInputRef.current.style.height = "auto";
-    }
   };
 
-  if (step === 3 && tailoredData) {
-    return (
-      <div className="chat-app-shell" style={{ overflowY: "auto" }}>
-        <header className="chat-header">
-          <div className="brand-wrapper">
-            <span
-              className="wordmark"
-              onClick={handleReset}
-              style={{ cursor: "pointer" }}
+  return (
+    <div
+      className={step === 3 ? "container-wide" : "container-narrow"}
+      onDragOver={(e) => {
+        e.preventDefault();
+        if (step === 1) setIsDragOver(true);
+      }}
+      onDragLeave={() => setIsDragOver(false)}
+      onDrop={handleDrop}
+    >
+      {/* Header bar */}
+      <header className="header-bar">
+        <div className="brand-wrapper">
+          <span
+            className="wordmark"
+            onClick={handleReset}
+            style={{ cursor: "pointer" }}
+          >
+            Fitted
+          </span>
+          <span className="brand-tag">v1.0</span>
+        </div>
+
+        <div className="status-chip" aria-live="polite">
+          <span
+            className={`status-dot ${
+              isProcessing ? "active" : profile ? "ok" : ""
+            }`}
+          />
+          <span>{statusText}</span>
+        </div>
+      </header>
+
+      {/* Start Interface Header (Claude Inspo) */}
+      {step === 1 && messages.length === 0 && (
+        <div className="claude-onboarding" style={{ padding: "10px 0 28px" }}>
+          <div className="claude-hero-title-row">
+            <svg
+              className="claude-starburst"
+              width="36"
+              height="36"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
             >
-              Fitted
+              <line x1="12" y1="2" x2="12" y2="22" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+              <line x1="19.07" y1="4.93" x2="4.93" y2="19.07" />
+            </svg>
+            <h1 className="claude-hero-title">Let&apos;s fit your CV</h1>
+          </div>
+          <p className="claude-hero-subtitle">
+            Attach your CV as a PDF or type your background to craft an academic Harvard-style one-page resume.
+          </p>
+
+          <div className="claude-suggestion-chips">
+            <button
+              type="button"
+              className="claude-chip"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              <span>Attach CV PDF</span>
+            </button>
+            <button
+              type="button"
+              className="claude-chip"
+              onClick={() => promptInputRef.current?.focus()}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+              </svg>
+              <span>Type / paste experience</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Conversation Stream */}
+      {messages.length > 0 && (
+        <div className="chat-thread">
+          {messages.map((m) => (
+            <div
+              key={m.id}
+              className={`chat-message-row ${m.sender === "user" ? "user" : ""}`}
+            >
+              {m.sender === "ai" && <div className="chat-avatar">AI</div>}
+
+              <div className={`chat-bubble ${m.sender === "user" ? "user" : ""}`}>
+                {m.fileName ? (
+                  <div className="chat-file-pill">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    <span>{m.fileName}</span>
+                    {m.fileSize && (
+                      <span style={{ opacity: 0.7, fontSize: 11 }}>({m.fileSize})</span>
+                    )}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 15, lineHeight: 1.5, margin: 0, whiteSpace: "pre-wrap" }}>
+                    {m.text}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Step Timeline Tree (Eduardo Alba Inspo) */}
+      {profile && (
+        <div className="timeline-tree">
+          <div className="timeline-header">
+            <span className="timeline-title">
+              <span>✓</span> Processed CV in seconds
             </span>
-            <span className="brand-tag">v1.0</span>
+            <button
+              type="button"
+              onClick={handleReset}
+              style={{
+                background: "none",
+                border: "none",
+                fontFamily: "var(--font-mono)",
+                fontSize: 11,
+                color: "var(--color-fg-muted)",
+                letterSpacing: "0.05em",
+                cursor: "pointer",
+              }}
+            >
+              RESTART
+            </button>
           </div>
 
-          <div style={{ display: "flex", gap: 10 }}>
+          <div className="timeline-list">
+            <div className="timeline-line" />
+
+            <div className="timeline-item">
+              <span className="timeline-dot done" />
+              <span>Reading profile text</span>
+            </div>
+
+            <div className="timeline-item">
+              <span className="timeline-dot done" />
+              <span>
+                Extracted {profile.experience?.length || 0} roles • {profile.projects?.length || 0} projects • {profile.skills?.reduce((a, c) => a + (c.items?.length || 0), 0) || 0} skills
+              </span>
+            </div>
+
+            <div className="timeline-item">
+              <span className="timeline-dot done" />
+              <span className="timeline-badge">
+                <span style={{ color: "var(--color-live)", fontSize: 10 }}>●</span>
+                <span>{profile.name}</span>
+                <span style={{ color: "var(--color-fg-muted)" }}>candidate</span>
+              </span>
+            </div>
+
+            {isProcessing ? (
+              <div className="timeline-item">
+                <span className="timeline-dot active" />
+                <span style={{ color: "var(--color-accent-orange)", fontWeight: 500 }}>
+                  Tailoring bullets and verifying zero fabrication...
+                </span>
+              </div>
+            ) : step === 3 ? (
+              <div className="timeline-item">
+                <span className="timeline-dot done" />
+                <span style={{ color: "var(--color-live)", fontWeight: 500 }}>
+                  One-page Harvard PDF generated
+                </span>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* Persistent Chatbox below */}
+      {step !== 3 && (
+        <div className="prompt-bar-container">
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="application/pdf,.pdf"
+            style={{ display: "none" }}
+            onChange={handleFileSelect}
+            disabled={isProcessing}
+          />
+
+          <form
+            onSubmit={handleChatboxSubmit}
+            className={`prompt-bar ${isDragOver ? "drag-over" : ""}`}
+          >
+            {/* Attachment Button for Step 1 */}
+            {step === 1 && (
+              <button
+                type="button"
+                className="prompt-attach-btn"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isProcessing}
+                title="Attach CV PDF file"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+              </button>
+            )}
+
+            {/* Attached File Pill Badge inside the chatbox */}
+            {step === 1 && attachedFile && (
+              <div className="attached-file-badge">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+                <span>{attachedFile.name}</span>
+                <button
+                  type="button"
+                  className="attached-file-remove"
+                  onClick={() => setAttachedFile(null)}
+                  title="Remove file"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Text Input */}
+            <input
+              ref={promptInputRef}
+              type="text"
+              className="prompt-input"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              disabled={isProcessing}
+              placeholder={
+                step === 1
+                  ? attachedFile
+                    ? "Press ↵ or send to parse your CV..."
+                    : "Attach CV PDF or type/paste your CV text here..."
+                  : clarifyingQuestion
+                  ? "Type your clarification..."
+                  : "e.g. Senior Frontend Engineer, Full Stack Developer..."
+              }
+            />
+
+            {/* Orange Circle Submit Button with Upward Arrow */}
+            <button
+              type="submit"
+              className="prompt-submit-btn"
+              disabled={
+                isProcessing ||
+                (step === 1 ? !attachedFile && !inputText.trim() : !inputText.trim())
+              }
+              title="Send"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5" />
+                <polyline points="5 12 12 5 19 12" />
+              </svg>
+            </button>
+          </form>
+
+          <div className="prompt-keyboard-hint">
+            Press ↵ to send
+          </div>
+
+          {errorMsg && (
+            <p className="error-text" style={{ textAlign: "center", marginTop: 12 }}>
+              {errorMsg}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Step 3: Result View */}
+      {step === 3 && tailoredData && (
+        <section style={{ marginTop: 24 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
             <button
               type="button"
               className="btn-secondary"
@@ -356,19 +617,17 @@ export default function Home() {
                 setInputText("");
               }}
             >
-              ← Back to Chat
+              ← Edit Target Role
             </button>
             <button
               type="button"
               className="btn-secondary"
               onClick={handleReset}
             >
-              + New Resume
+              Upload New CV
             </button>
           </div>
-        </header>
 
-        <main className="container-wide" style={{ padding: "32px 24px 80px" }}>
           <div className="result-grid">
             {/* Left Column: PDF Preview */}
             <div>
@@ -471,314 +730,8 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </main>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="chat-app-shell"
-      onDragOver={(e) => {
-        e.preventDefault();
-        if (step === 1) setIsDragOver(true);
-      }}
-      onDragLeave={() => setIsDragOver(false)}
-      onDrop={handleDrop}
-    >
-      {/* Fixed Header Bar */}
-      <header className="chat-header">
-        <div className="brand-wrapper">
-          <span
-            className="wordmark"
-            onClick={handleReset}
-            style={{ cursor: "pointer" }}
-          >
-            Fitted
-          </span>
-          <span className="brand-tag">v1.0</span>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div className="status-chip" aria-live="polite">
-            <span
-              className={`status-dot ${
-                isProcessing ? "active" : profile ? "ok" : ""
-              }`}
-            />
-            <span>{statusText}</span>
-          </div>
-
-          {messages.length > 0 && (
-            <button
-              type="button"
-              onClick={handleReset}
-              className="btn-secondary"
-              style={{ height: 32, padding: "0 12px", fontSize: 12.5 }}
-            >
-              + New Chat
-            </button>
-          )}
-        </div>
-      </header>
-
-      {/* Scrollable Conversation Stream */}
-      <main className="chat-scroll-area">
-        <div className="chat-scroll-content">
-          {messages.length === 0 ? (
-            /* Claude New Chat Onboarding Interface */
-            <div className="claude-onboarding">
-              <div className="claude-hero-title-row">
-                <svg
-                  className="claude-starburst"
-                  width="34"
-                  height="34"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                >
-                  <line x1="12" y1="2" x2="12" y2="22" />
-                  <line x1="2" y1="12" x2="22" y2="12" />
-                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-                  <line x1="19.07" y1="4.93" x2="4.93" y2="19.07" />
-                </svg>
-                <h1 className="claude-hero-title">Let&apos;s fit your CV</h1>
-              </div>
-              <p className="claude-hero-subtitle">
-                Attach your CV as a PDF or type your background to craft an academic Harvard-style one-page resume.
-              </p>
-
-              <div className="claude-suggestion-chips">
-                <button
-                  type="button"
-                  className="claude-chip"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                    <polyline points="14 2 14 8 20 8" />
-                  </svg>
-                  <span>Attach CV PDF</span>
-                </button>
-                <button
-                  type="button"
-                  className="claude-chip"
-                  onClick={() => promptInputRef.current?.focus()}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 20h9" />
-                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                  </svg>
-                  <span>Type / paste experience</span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="chat-thread">
-              {messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`chat-message-row ${m.sender === "user" ? "user" : ""}`}
-                >
-                  {m.sender === "ai" && <div className="chat-avatar">AI</div>}
-
-                  <div className={`chat-bubble ${m.sender === "user" ? "user" : ""}`}>
-                    {m.fileName ? (
-                      <div className="chat-file-pill">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                          <polyline points="14 2 14 8 20 8" />
-                        </svg>
-                        <span>{m.fileName}</span>
-                        {m.fileSize && (
-                          <span style={{ opacity: 0.7, fontSize: 11 }}>({m.fileSize})</span>
-                        )}
-                      </div>
-                    ) : (
-                      <p style={{ fontSize: 15, lineHeight: 1.5, margin: 0, whiteSpace: "pre-wrap" }}>
-                        {m.text}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              {/* Step Timeline Tree (Eduardo Alba Inspo) */}
-              {profile && (
-                <div className="timeline-tree">
-                  <div className="timeline-header">
-                    <span className="timeline-title">
-                      <span>✓</span> Processed CV in seconds
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleReset}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 11,
-                        color: "var(--color-fg-muted)",
-                        letterSpacing: "0.05em",
-                        cursor: "pointer",
-                      }}
-                    >
-                      RESTART
-                    </button>
-                  </div>
-
-                  <div className="timeline-list">
-                    <div className="timeline-line" />
-
-                    <div className="timeline-item">
-                      <span className="timeline-dot done" />
-                      <span>Reading profile text</span>
-                    </div>
-
-                    <div className="timeline-item">
-                      <span className="timeline-dot done" />
-                      <span>
-                        Extracted {profile.experience?.length || 0} roles • {profile.projects?.length || 0} projects • {profile.skills?.reduce((a, c) => a + (c.items?.length || 0), 0) || 0} skills
-                      </span>
-                    </div>
-
-                    <div className="timeline-item">
-                      <span className="timeline-dot done" />
-                      <span className="timeline-badge">
-                        <span style={{ color: "var(--color-live)", fontSize: 10 }}>●</span>
-                        <span>{profile.name}</span>
-                        <span style={{ color: "var(--color-fg-muted)" }}>candidate</span>
-                      </span>
-                    </div>
-
-                    {isProcessing ? (
-                      <div className="timeline-item">
-                        <span className="timeline-dot active" />
-                        <span style={{ color: "var(--color-accent-orange)", fontWeight: 500 }}>
-                          Tailoring bullets and verifying zero fabrication...
-                        </span>
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              )}
-
-              {/* Anchor for auto-scrolling */}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* Fixed Bottom Chatbox (Pinned to Bottom, Not Scrollable) */}
-      <footer className="chatbox-bottom-anchor">
-        <div className="chatbox-bottom-inner">
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept="application/pdf,.pdf"
-            style={{ display: "none" }}
-            onChange={handleFileSelect}
-            disabled={isProcessing}
-          />
-
-          <form
-            onSubmit={handleChatboxSubmit}
-            className={`prompt-bar ${isDragOver ? "drag-over" : ""}`}
-          >
-            {/* Attachment Button for Step 1 */}
-            {step === 1 && (
-              <button
-                type="button"
-                className="prompt-attach-btn"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isProcessing}
-                title="Attach CV PDF file"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                </svg>
-              </button>
-            )}
-
-            {/* Attached File Pill Badge inside the chatbox */}
-            {step === 1 && attachedFile && (
-              <div className="attached-file-badge">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
-                <span>{attachedFile.name}</span>
-                <button
-                  type="button"
-                  className="attached-file-remove"
-                  onClick={() => setAttachedFile(null)}
-                  title="Remove file"
-                >
-                  ✕
-                </button>
-              </div>
-            )}
-
-            {/* Auto-expanding Textarea / Input */}
-            <textarea
-              ref={promptInputRef}
-              rows={1}
-              className="prompt-textarea"
-              value={inputText}
-              onChange={(e) => {
-                setInputText(e.target.value);
-                e.target.style.height = "auto";
-                e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleChatboxSubmit(e);
-                }
-              }}
-              disabled={isProcessing}
-              placeholder={
-                step === 1
-                  ? attachedFile
-                    ? "Press ↵ or send to parse your CV..."
-                    : "Attach CV PDF or type/paste your CV text here..."
-                  : clarifyingQuestion
-                  ? "Type your clarification..."
-                  : "What role are you applying for? e.g. Senior Frontend Engineer..."
-              }
-            />
-
-            {/* Orange Circle Submit Button with Upward Arrow */}
-            <button
-              type="submit"
-              className="prompt-submit-btn"
-              disabled={
-                isProcessing ||
-                (step === 1 ? !attachedFile && !inputText.trim() : !inputText.trim())
-              }
-              title="Send"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="19" x2="12" y2="5" />
-                <polyline points="5 12 12 5 19 12" />
-              </svg>
-            </button>
-          </form>
-
-          <div className="prompt-keyboard-hint">
-            Press ↵ to send
-          </div>
-
-          {errorMsg && (
-            <p className="error-text" style={{ textAlign: "center", marginTop: 8 }}>
-              {errorMsg}
-            </p>
-          )}
-        </div>
-      </footer>
+        </section>
+      )}
     </div>
   );
 }
