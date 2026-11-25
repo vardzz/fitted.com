@@ -27,7 +27,7 @@
   --radius-full: 9999px;
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.03), 0 4px 16px rgba(0, 0, 0, 0.03);
-  --shadow-pill: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-pill: 0 2px 10px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
   --shadow-sheet: 0 1px 3px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.06);
 }
 
@@ -62,9 +62,9 @@ input, textarea {
 
 /* Containers */
 .container-narrow {
-  max-width: 620px;
+  max-width: 640px;
   margin: 0 auto;
-  padding: 72px 24px 96px;
+  padding: 56px 20px 96px;
   animation: page-in var(--t-slow) var(--ease-out);
 }
 
@@ -162,41 +162,19 @@ input, textarea {
 
 /* Typography */
 .page-title {
-  font-size: 38px;
+  font-size: 36px;
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.15;
   color: var(--color-fg);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .page-tagline {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--color-fg-muted);
   line-height: 1.5;
-  margin-bottom: 32px;
-}
-
-/* Dropzone */
-.dropzone {
-  background: var(--color-surface);
-  border: 1.5px dashed var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 48px 24px;
-  text-align: center;
-  transition: all var(--t-fast) var(--ease-out);
-  box-shadow: var(--shadow-card);
-}
-
-.dropzone:hover {
-  border-color: #d4d4d8;
-  transform: translateY(-1px);
-}
-
-.dropzone.drag-active {
-  border-color: var(--color-accent);
-  background: rgba(48, 113, 196, 0.06);
-  transform: scale(1.008);
+  margin-bottom: 28px;
 }
 
 /* Buttons */
@@ -207,9 +185,9 @@ input, textarea {
   background: var(--color-fg);
   color: #ffffff;
   font-weight: 500;
-  font-size: 14.5px;
-  height: 42px;
-  padding: 0 20px;
+  font-size: 14px;
+  height: 38px;
+  padding: 0 18px;
   border-radius: var(--radius-md);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
   letter-spacing: -0.01em;
@@ -233,9 +211,9 @@ input, textarea {
   color: var(--color-fg);
   border: 1px solid var(--color-border);
   font-weight: 500;
-  font-size: 14px;
-  height: 38px;
-  padding: 0 16px;
+  font-size: 13.5px;
+  height: 36px;
+  padding: 0 14px;
   border-radius: var(--radius-md);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
@@ -249,11 +227,10 @@ input, textarea {
   background: none;
   border: none;
   color: var(--color-fg-muted);
-  font-size: 13.5px;
+  font-size: 13px;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
-  margin-top: 14px;
   transition: color var(--t-fast) var(--ease-out);
 }
 
@@ -261,9 +238,77 @@ input, textarea {
   color: var(--color-fg);
 }
 
-/* Chat Prompt Bar (Eduardo Alba Screenshot 3) */
+/* Chat Thread */
+.chat-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.chat-message-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  animation: page-in var(--t-base) var(--ease-out);
+}
+
+.chat-message-row.user {
+  justify-content: flex-end;
+}
+
+.chat-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-fg);
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.chat-bubble {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  border-top-left-radius: 4px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow-card);
+  max-width: 540px;
+}
+
+.chat-bubble.user {
+  background: var(--color-fg);
+  color: #ffffff;
+  border-color: var(--color-fg);
+  border-radius: 16px;
+  border-top-right-radius: 4px;
+  padding: 12px 18px;
+  max-width: 480px;
+}
+
+.chat-file-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* Chat Prompt Bar (Eduardo Alba Inspo) */
 .prompt-bar-container {
-  margin-top: 24px;
+  position: relative;
+  margin-top: 16px;
 }
 
 .prompt-bar {
@@ -272,14 +317,73 @@ input, textarea {
   background: #ffffff;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
-  padding: 6px 8px 6px 20px;
+  padding: 6px 8px 6px 14px;
   box-shadow: var(--shadow-pill);
-  transition: border-color var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+  transition: all var(--t-fast) var(--ease-out);
+  gap: 8px;
 }
 
 .prompt-bar:focus-within {
-  border-color: #d4d4d8;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border-color: #a1a1aa;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.08);
+}
+
+.prompt-bar.drag-over {
+  border-color: var(--color-accent);
+  background: rgba(48, 113, 196, 0.05);
+  box-shadow: 0 0 0 3px rgba(48, 113, 196, 0.15);
+}
+
+.prompt-attach-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-fg-muted);
+  flex-shrink: 0;
+  transition: all var(--t-fast) var(--ease-out);
+}
+
+.prompt-attach-btn:hover:not(:disabled) {
+  background: #f4f4f5;
+  color: var(--color-fg);
+}
+
+.attached-file-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f4f4f5;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-fg);
+  max-width: 200px;
+}
+
+.attached-file-badge span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attached-file-remove {
+  background: none;
+  border: none;
+  color: var(--color-fg-muted);
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.attached-file-remove:hover {
+  color: var(--color-fg);
 }
 
 .prompt-input {
@@ -287,9 +391,14 @@ input, textarea {
   border: none;
   background: transparent;
   outline: none;
-  font-size: 15px;
+  font-size: 14.5px;
   color: var(--color-fg);
   font-family: inherit;
+  min-width: 120px;
+}
+
+.prompt-input::placeholder {
+  color: #a1a1aa;
 }
 
 .prompt-submit-btn {
@@ -310,59 +419,29 @@ input, textarea {
   transform: scale(1.05);
 }
 
+.prompt-submit-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
 .prompt-submit-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
 .prompt-keyboard-hint {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 10px;
   letter-spacing: 0.06em;
   color: #a1a1aa;
   text-align: right;
-  margin-top: 8px;
-  padding-right: 12px;
+  margin-top: 6px;
+  padding-right: 14px;
   text-transform: uppercase;
 }
 
-/* Chat Bubble UI */
-.chat-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #f4f4f5;
-  border: 1px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-fg);
-  flex-shrink: 0;
-}
-
-.chat-message-row {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  margin-bottom: 24px;
-  animation: page-in var(--t-base) var(--ease-out);
-}
-
-.chat-bubble {
-  background: #ffffff;
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  border-top-left-radius: 4px;
-  padding: 16px 20px;
-  box-shadow: var(--shadow-card);
-  max-width: 540px;
-}
-
-/* Step Timeline Tree (Eduardo Alba Screenshot 1 & 2) */
+/* Timeline Tree (Eduardo Alba Screenshot 1 & 2) */
 .timeline-tree {
-  margin-bottom: 32px;
+  margin: 16px 0 24px;
   padding-left: 4px;
   animation: page-in var(--t-base) var(--ease-out);
 }
@@ -371,12 +450,12 @@ input, textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .timeline-title {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--color-fg-muted);
   display: flex;
   align-items: center;
@@ -401,10 +480,10 @@ input, textarea {
   position: relative;
   font-size: 13.5px;
   color: var(--color-fg);
-  margin-bottom: 10px;
+  margin-bottom: 9px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .timeline-item:last-child {
@@ -448,14 +527,14 @@ input, textarea {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 22px;
   box-shadow: var(--shadow-card);
 }
 
 .result-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 32px;
+  gap: 28px;
 }
 
 @media (min-width: 960px) {
@@ -476,7 +555,7 @@ input, textarea {
 
 .error-text {
   color: var(--color-error);
-  font-size: 14px;
+  font-size: 13.5px;
   margin-top: 10px;
   line-height: 1.4;
 }
