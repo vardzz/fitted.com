@@ -332,48 +332,10 @@ export default function Home() {
       onDragLeave={() => setIsDragOver(false)}
       onDrop={handleDrop}
     >
-      {/* Header bar */}
-      <header className="header-bar">
-        <div className="brand-wrapper">
-          <span
-            className="wordmark"
-            onClick={handleReset}
-            style={{ cursor: "pointer" }}
-          >
-            Fitted
-          </span>
-          <span className="brand-tag">v1.0</span>
-        </div>
-
-        <div className="status-chip" aria-live="polite">
-          <span
-            className={`status-dot ${
-              isProcessing ? "active" : profile ? "ok" : ""
-            }`}
-          />
-          <span>{statusText}</span>
-        </div>
-      </header>
-
-      {/* Start Interface Header (Claude Inspo) */}
+      {/* Start Interface Header */}
       {step === 1 && messages.length === 0 && (
-        <div className="claude-onboarding" style={{ padding: "10px 0 28px" }}>
+        <div className="claude-onboarding" style={{ padding: "40px 0 28px" }}>
           <div className="claude-hero-title-row">
-            <svg
-              className="claude-starburst"
-              width="36"
-              height="36"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            >
-              <line x1="12" y1="2" x2="12" y2="22" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-              <line x1="19.07" y1="4.93" x2="4.93" y2="19.07" />
-            </svg>
             <h1 className="claude-hero-title">Let&apos;s fit your CV</h1>
           </div>
           <p className="claude-hero-subtitle">
