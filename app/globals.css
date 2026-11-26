@@ -1,23 +1,24 @@
 :root {
-  /* Adrian Abelarde signature color system */
-  --color-canvas: #f6f6f6;
+  /* Pure Minimalist Black and White Color System */
+  --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-fg: #0a0a0a;
-  --color-fg-muted: #737373;
-  --color-fg-subtle: #a3a3a3;
+  --color-surface-subtle: #fafafa;
+  --color-fg: #000000;
+  --color-fg-muted: #666666;
+  --color-fg-subtle: #888888;
   --color-border: #e5e5e5;
-  --color-border-hover: #0a0a0a;
-  --color-accent: #0a0a0a;
-  --color-accent-orange: #f95721;
-  --color-accent-orange-hover: #ea4b16;
-  --color-live: #22a06b;
-  --color-warn: #b45309;
-  --color-error: #e40014;
+  --color-border-hover: #000000;
+  --color-accent: #000000;
+  --color-accent-orange: #000000;
+  --color-accent-orange-hover: #1f1f1f;
+  --color-live: #000000;
+  --color-warn: #444444;
+  --color-error: #000000;
 
   --font-sans: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  /* Adrian Abelarde signature easings */
+  /* Signature easings */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
@@ -32,13 +33,13 @@
   --radius-lg: 14px;
   --radius-full: 9999px;
 
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.03), 0 4px 16px -4px rgba(0, 0, 0, 0.04);
-  --shadow-pill: 0 1px 3px rgba(0, 0, 0, 0.03), 0 6px 20px -4px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px -4px rgba(0, 0, 0, 0.04);
+  --shadow-pill: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 20px -4px rgba(0, 0, 0, 0.05);
   --shadow-sheet: 0 1px 3px rgba(0, 0, 0, 0.04), 0 16px 40px -12px rgba(0, 0, 0, 0.08);
 }
 
 ::selection {
-  background: #0a0a0a;
+  background: #000000;
   color: #ffffff;
 }
 
@@ -221,24 +222,24 @@ input, textarea {
 }
 
 .eduardo-build-dot.done {
-  background-color: #27272a;
+  background-color: #000000;
   transform: scale(1);
   box-shadow: none;
 }
 
 .eduardo-build-dot.active {
-  background-color: #f95721;
+  background-color: #000000;
   transform: scale(1.18);
-  box-shadow: 0 0 0 4px rgba(249, 87, 33, 0.22);
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.12);
   animation: smooth-pulse 1.3s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
 }
 
 @keyframes smooth-pulse {
   0% {
-    box-shadow: 0 0 0 2px rgba(249, 87, 33, 0.15);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
   }
   100% {
-    box-shadow: 0 0 0 5px rgba(249, 87, 33, 0.32);
+    box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.16);
   }
 }
 
@@ -374,12 +375,12 @@ input, textarea {
 }
 
 .status-dot.active {
-  background-color: var(--color-accent-orange);
+  background-color: #000000;
   animation: twinkle 1.4s ease-in-out infinite;
 }
 
 .status-dot.ok {
-  background-color: var(--color-live);
+  background-color: #000000;
   animation: twinkle 2.2s ease-in-out infinite;
 }
 
@@ -541,7 +542,7 @@ input, textarea {
 }
 
 .claude-starburst {
-  color: #d97757;
+  color: #000000;
   flex-shrink: 0;
   animation: pulse-slow 3s ease-in-out infinite;
 }
@@ -980,7 +981,7 @@ input, textarea {
 }
 
 .timeline-dot.active {
-  background-color: var(--color-accent-orange);
+  background-color: #000000;
   animation: twinkle 1.2s ease-in-out infinite;
 }
 

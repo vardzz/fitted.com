@@ -42,26 +42,26 @@ An engineering-led, ultra-minimalist, precision design system inspired by [adria
 ```css
 :root {
   /* Canvas & Surfaces */
-  --color-canvas: #f6f6f6;             /* Editorial neutral background */
+  --color-canvas: #ffffff;             /* Crisp pure white canvas */
   --color-surface: #ffffff;            /* Floating cards, modals, sheets */
-  --color-surface-subtle: #fafafa;     /* Secondary surface fill */
+  --color-surface-subtle: #fafafa;     /* Subtle light fill */
 
   /* Text & Foreground */
-  --color-fg: #0a0a0a;                 /* Deep primary charcoal black */
-  --color-fg-muted: #737373;           /* Secondary body, descriptions */
-  --color-fg-subtle: #a3a3a3;          /* Placeholder, timestamps, icons */
+  --color-fg: #000000;                 /* Pure black primary */
+  --color-fg-muted: #666666;           /* Secondary body, descriptions */
+  --color-fg-subtle: #888888;          /* Placeholder, timestamps, icons */
 
   /* Hairline Borders */
   --color-border: #e5e5e5;             /* Razor-thin 1px container borders */
-  --color-border-hover: #0a0a0a;       /* Active / focused interactive borders */
+  --color-border-hover: #000000;       /* Active / focused interactive borders */
 
-  /* Functional Accents */
-  --color-accent: #0a0a0a;             /* Primary interactive action color */
-  --color-live: #22a06b;               /* Success / Connected / Verified */
-  --color-accent-orange: #f95721;      /* Active build dot / processing pulse */
-  --color-accent-orange-hover: #ea4b16;
-  --color-warn: #b45309;               /* Advisory badges */
-  --color-error: #e40014;              /* Destructive / validation error */
+  /* Functional Accents (Monochrome) */
+  --color-accent: #000000;             /* Primary interactive action color */
+  --color-live: #000000;               /* Success / Connected / Verified */
+  --color-accent-orange: #000000;      /* Active build dot / processing pulse */
+  --color-accent-orange-hover: #1f1f1f;
+  --color-warn: #444444;               /* Advisory badges */
+  --color-error: #000000;              /* Destructive / validation error */
 }
 ```
 
@@ -69,20 +69,8 @@ An engineering-led, ultra-minimalist, precision design system inspired by [adria
 ```css
 /* High-contrast Selection */
 ::selection {
-  background: #0a0a0a;
+  background: #000000;
   color: #ffffff;
-}
-
-/* Top Diagonal Stripes Ribbon */
-.stripes-band {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  z-index: 100;
-  background-image: repeating-linear-gradient(-45deg, #d9d9d9 0 7px, #ededed 7px 14px);
-  pointer-events: none;
 }
 ```
 
