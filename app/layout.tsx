@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -19,8 +25,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={jetbrainsMono.variable}>
-      <body className={jetbrainsMono.className}>{children}</body>
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      <body className={`${inter.className} font-medium antialiased`}>
+        {/* Adrian Abelarde signature diagonal stripes accent ribbon */}
+        <div className="stripes-band" />
+        {children}
+      </body>
     </html>
   );
 }

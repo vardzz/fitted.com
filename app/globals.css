@@ -1,34 +1,45 @@
 :root {
-  --color-canvas: #fafaf9;
+  /* Adrian Abelarde signature color system */
+  --color-canvas: #f6f6f6;
   --color-surface: #ffffff;
-  --color-fg: #18181b;
-  --color-fg-muted: #71717a;
-  --color-fg-subtle: #8a8a92;
-  --color-border: #e4e4e7;
-  --color-accent: #3071c4;
+  --color-fg: #0a0a0a;
+  --color-fg-muted: #737373;
+  --color-fg-subtle: #a3a3a3;
+  --color-border: #e5e5e5;
+  --color-border-hover: #0a0a0a;
+  --color-accent: #0a0a0a;
   --color-accent-orange: #f95721;
   --color-accent-orange-hover: #ea4b16;
   --color-live: #22a06b;
   --color-warn: #b45309;
-  --color-error: #dc2626;
+  --color-error: #e40014;
 
-  --font-sans: var(--font-jetbrains), "JetBrains Mono", monospace;
-  --font-mono: var(--font-jetbrains), "JetBrains Mono", monospace;
+  --font-sans: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --t-fast: 150ms;
+  /* Adrian Abelarde signature easings */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --t-fast: 180ms;
   --t-base: 280ms;
-  --t-slow: 420ms;
+  --t-slow: 450ms;
 
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-full: 9999px;
 
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.03), 0 4px 16px rgba(0, 0, 0, 0.03);
-  --shadow-pill: 0 2px 10px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
-  --shadow-sheet: 0 1px 3px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.03), 0 4px 16px -4px rgba(0, 0, 0, 0.04);
+  --shadow-pill: 0 1px 3px rgba(0, 0, 0, 0.03), 0 6px 20px -4px rgba(0, 0, 0, 0.05);
+  --shadow-sheet: 0 1px 3px rgba(0, 0, 0, 0.04), 0 16px 40px -12px rgba(0, 0, 0, 0.08);
+}
+
+::selection {
+  background: #0a0a0a;
+  color: #ffffff;
 }
 
 * {
@@ -37,10 +48,23 @@
   padding: 0;
 }
 
+/* Adrian Abelarde Top Diagonal Stripes Ribbon */
+.stripes-band {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 100;
+  background-image: repeating-linear-gradient(-45deg, #d9d9d9 0 7px, #ededed 7px 14px);
+  pointer-events: none;
+}
+
 body {
   background-color: var(--color-canvas);
   color: var(--color-fg);
   font-family: var(--font-sans);
+  font-weight: 500;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -49,14 +73,31 @@ body {
 
 button {
   font-family: inherit;
+  font-weight: 500;
   cursor: pointer;
   border: none;
   outline: none;
   transition: all var(--t-fast) var(--ease-out);
 }
 
+button:active:not(:disabled),
+.claude-chip:active,
+.prompt-submit-btn:active:not(:disabled),
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-canvas), 0 0 0 4px rgba(10, 10, 10, 0.15);
+}
+
 input, textarea {
   font-family: inherit;
+  font-weight: 450;
   color: var(--color-fg);
 }
 
@@ -527,16 +568,17 @@ input, textarea {
   font-family: var(--font-sans);
   font-size: 38px;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   color: var(--color-fg);
-  line-height: 1.18;
+  line-height: 1.15;
 }
 
 .claude-hero-subtitle {
   font-size: 15px;
+  font-weight: 450;
   color: var(--color-fg-muted);
-  max-width: 440px;
-  line-height: 1.5;
+  max-width: 460px;
+  line-height: 1.55;
   margin-bottom: 24px;
 }
 
@@ -554,6 +596,7 @@ input, textarea {
   border-radius: var(--radius-full);
   padding: 8px 16px;
   font-size: 13.5px;
+  font-weight: 500;
   color: var(--color-fg);
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
@@ -564,9 +607,9 @@ input, textarea {
 }
 
 .claude-chip:hover {
-  border-color: #a1a1aa;
+  border-color: #0a0a0a;
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.06);
 }
 
 /* Fixed Bottom Chatbox Anchor (Non-scrollable, Fixed to Bottom) */
@@ -633,17 +676,19 @@ input, textarea {
   padding: 16px 18px;
   box-shadow: var(--shadow-card);
   max-width: 540px;
+  font-size: 14.5px;
+  line-height: 1.55;
 }
 
 .chat-bubble.user {
-  background: #ffffff;
-  color: var(--color-fg);
-  border: 1px solid var(--color-border);
+  background: #0a0a0a;
+  color: #ffffff;
+  border: 1px solid #0a0a0a;
   border-radius: 16px;
   border-top-right-radius: 4px;
   padding: 12px 18px;
   max-width: 480px;
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 .chat-file-pill {
@@ -753,14 +798,14 @@ input, textarea {
 }
 
 .prompt-bar:focus-within {
-  border-color: #a1a1aa;
-  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.08);
+  border-color: #0a0a0a;
+  box-shadow: 0 0 0 2px var(--color-canvas), 0 0 0 4px rgba(10, 10, 10, 0.12), 0 8px 24px -4px rgba(0, 0, 0, 0.06);
 }
 
 .prompt-bar.drag-over {
-  border-color: var(--color-accent);
-  background: rgba(48, 113, 196, 0.05);
-  box-shadow: 0 0 0 3px rgba(48, 113, 196, 0.15);
+  border-color: #0a0a0a;
+  background: #fafafa;
+  box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.1);
 }
 
 .prompt-attach-btn {
@@ -831,10 +876,10 @@ input, textarea {
 }
 
 .prompt-submit-btn {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: var(--color-accent-orange);
+  background: #0a0a0a;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -844,7 +889,7 @@ input, textarea {
 }
 
 .prompt-submit-btn:hover:not(:disabled) {
-  background: var(--color-accent-orange-hover);
+  background: #262626;
   transform: scale(1.05);
 }
 
@@ -853,7 +898,9 @@ input, textarea {
 }
 
 .prompt-submit-btn:disabled {
-  opacity: 0.35;
+  background: #e5e5e5;
+  color: #a3a3a3;
+  opacity: 1;
   cursor: not-allowed;
 }
 
