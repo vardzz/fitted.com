@@ -76,9 +76,7 @@ button:active:not(:disabled),
   transform: scale(0.97);
 }
 
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible {
+button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--color-canvas), 0 0 0 4px rgba(10, 10, 10, 0.15);
 }
@@ -781,20 +779,25 @@ input, textarea {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
   padding: 6px 8px 6px 14px;
-  box-shadow: var(--shadow-pill);
-  transition: all var(--t-fast) var(--ease-out);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 4px 12px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   gap: 8px;
 }
 
+.prompt-bar:hover {
+  border-color: #d1d1d6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 6px 18px rgba(0, 0, 0, 0.03);
+}
+
 .prompt-bar:focus-within {
-  border-color: #0a0a0a;
-  box-shadow: 0 0 0 2px var(--color-canvas), 0 0 0 4px rgba(10, 10, 10, 0.12), 0 8px 24px -4px rgba(0, 0, 0, 0.06);
+  border-color: #a1a1aa;
+  box-shadow: 0 3px 16px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .prompt-bar.drag-over {
   border-color: #0a0a0a;
   background: #fafafa;
-  box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.1);
+  box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.08);
 }
 
 .prompt-attach-btn {
@@ -851,13 +854,21 @@ input, textarea {
 
 .prompt-input {
   flex: 1;
-  border: none;
-  background: transparent;
-  outline: none;
+  border: none !important;
+  background: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
   font-size: 14.5px;
   color: var(--color-fg);
   font-family: inherit;
   min-width: 120px;
+}
+
+.prompt-input:focus,
+.prompt-input:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .prompt-input::placeholder {
