@@ -778,14 +778,13 @@ input, textarea {
   flex-direction: column;
   background: #ffffff;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  border-radius: 24px;
   padding: 6px 8px 6px 14px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 4px 12px rgba(0, 0, 0, 0.02);
-  transition: border-radius 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.2s ease,
+  transition: border-color 0.2s ease,
               box-shadow 0.2s ease,
-              padding 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              gap 0.2s ease;
+              padding 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease;
   gap: 0;
   width: 100%;
 }
@@ -801,9 +800,9 @@ input, textarea {
 }
 
 .prompt-bar.expanded {
-  border-radius: 20px;
-  padding: 12px 14px 10px;
-  gap: 10px;
+  border-radius: 24px;
+  padding: 10px 14px 10px;
+  gap: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.02);
 }
 
@@ -821,14 +820,14 @@ input, textarea {
   background: #f4f4f5;
   border: 1px solid var(--color-border);
   border-radius: 12px;
-  padding: 8px 12px;
+  padding: 6px 10px;
   max-width: 280px;
-  animation: page-in var(--t-fast) var(--ease-out);
+  animation: chatbox-fade-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .prompt-attached-icon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
   background: #ffffff;
   border: 1px solid var(--color-border);
@@ -913,6 +912,7 @@ input, textarea {
   margin: 0;
   scrollbar-width: thin;
   scrollbar-color: #d4d4d8 transparent;
+  transition: height 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .prompt-textarea:focus,
@@ -978,7 +978,18 @@ input, textarea {
   width: 100%;
   padding-top: 6px;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
-  animation: page-in var(--t-fast) var(--ease-out);
+  animation: chatbox-fade-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes chatbox-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .prompt-toolbar-left,

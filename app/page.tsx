@@ -142,10 +142,28 @@ export default function Home() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const isExpanded = Boolean(attachedFile) || inputText.includes("\n") || inputText.length > 55 || isTextareaMultiLine;
+  const isExpanded = Boolean(attachedFile) || inputText.includes("\n") || isTextareaMultiLine;
+
+  const adjustHeight = (text: string, file: File | null) => {
+    const el = promptInputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    const scrollHeight = el.scrollHeight;
+    const isTall = scrollHeight > 36;
+    const shouldExpand = Boolean(file) || text.includes("\n") || isTall;
+    setIsTextareaMultiLine(shouldExpand);
+
+    if (shouldExpand) {
+      el.style.height = `${Math.min(Math.max(scrollHeight, 38), 200)}px`;
+    } else {
+      el.style.height = "24px";
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInputText(e.target.value);
+    const val = e.target.value;
+    setInputText(val);
+    adjustHeight(val, attachedFile);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -160,19 +178,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const el = promptInputRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    const scrollHeight = el.scrollHeight;
-    const isTall = scrollHeight > 36;
-    const shouldExpand = Boolean(attachedFile) || inputText.includes("\n") || inputText.length > 55 || isTall;
-    setIsTextareaMultiLine(shouldExpand);
-
-    if (shouldExpand) {
-      el.style.height = `${Math.min(Math.max(scrollHeight, 38), 200)}px`;
-    } else {
-      el.style.height = "24px";
-    }
+    adjustHeight(inputText, attachedFile);
   }, [inputText, attachedFile]);
 
   const processCvText = async (text: string, originalFileName?: string) => {
