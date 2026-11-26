@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
     const { text } = await extractText(uint8Array, { mergePages: true });
 
-    const rawText = (typeof text === "string" ? text : Array.isArray(text) ? text.join("\n\n") : "") || "";
+    const rawText = typeof text === "string" ? text : Array.isArray(text as any) ? (text as any).join("\n\n") : String(text || "");
 
     // Industrial text cleaning & PDF artifact healing
     const cleanedText = rawText
