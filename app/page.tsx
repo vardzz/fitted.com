@@ -524,6 +524,8 @@ export default function Home() {
       className={
         messages.length === 0
           ? "container-centered"
+          : step === 3
+          ? "container-narrow"
           : "container-narrow has-chat"
       }
       onDragOver={(e) => {
@@ -668,37 +670,6 @@ export default function Home() {
                     </p>
                   </div>
 
-                  {/* Action Bar Pills */}
-                  <div className="chat-action-bar">
-                    <button
-                      type="button"
-                      className="btn-chat-action"
-                      onClick={() => {
-                        setStep(2);
-                        setInputText(m.role || roleInput || "");
-                        promptInputRef.current?.focus();
-                      }}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12" />
-                        <polyline points="12 19 5 12 12 5" />
-                      </svg>
-                      <span>Edit Target Role</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-chat-action"
-                      onClick={handleReset}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="17 8 12 3 7 8" />
-                        <line x1="12" y1="3" x2="12" y2="15" />
-                      </svg>
-                      <span>Upload New CV</span>
-                    </button>
-                  </div>
-
                   {/* TOP: Tailored Harvard Resume */}
                   <div className="ai-resume-preview-card">
                     <ResumeViewer
@@ -763,6 +734,22 @@ export default function Home() {
                         </p>
                       )}
                     </div>
+                  </div>
+
+                  {/* Upload New CV at the bottom of insights */}
+                  <div className="ai-resume-footer-actions">
+                    <button
+                      type="button"
+                      className="btn-chat-reset"
+                      onClick={handleReset}
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                      <span>Upload New CV</span>
+                    </button>
                   </div>
                 </div>
               ) : m.isProfileSummary && profile ? (
@@ -899,8 +886,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* Chatbox: inline below hero at start (only when build completes), fixed at bottom once message is sent */}
-      {(messages.length > 0 || isBuildComplete) && (
+      {/* Chatbox: inline below hero at start, fixed at bottom once message is sent; hidden when resume & insights are displayed */}
+      {step !== 3 && (messages.length > 0 || isBuildComplete) && (
         <div
           className={
             messages.length > 0
