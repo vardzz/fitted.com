@@ -77,11 +77,12 @@ input, textarea {
 .container-centered .claude-onboarding {
   width: 100%;
   padding: 0;
+  flex: none;
 }
 
 .container-centered .prompt-bar-container {
   width: 100%;
-  margin-top: 0;
+  margin-top: 24px;
 }
 
 .container-narrow {
@@ -308,13 +309,13 @@ input, textarea {
 
 /* Claude-Style Minimalist Onboarding Hero */
 .claude-onboarding {
-  flex: 1;
+  flex: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 40px 16px 60px;
+  padding: 0;
   animation: page-in var(--t-slow) var(--ease-out);
 }
 
