@@ -27,8 +27,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className={`${inter.className} font-medium antialiased`}>
-        {/* Adrian Abelarde signature diagonal stripes accent ribbon */}
-        <div className="stripes-band" />
         {children}
       </body>
     </html>
