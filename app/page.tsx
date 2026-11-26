@@ -41,6 +41,21 @@ const BUILD_STEPS: BuildStep[] = [
   { id: "ready", label: "Fitted environment ready" },
 ];
 
+const CV_PARSE_STEPS = [
+  { id: "read", label: "Reading CV document & extracting text" },
+  { id: "parse", label: "Extracting experience, projects & skills" },
+  { id: "guardrails", label: "Verifying zero-fabrication factual boundaries" },
+  { id: "ready", label: "Calibrating Harvard-standard profile format" },
+];
+
+const TAILOR_STEPS = [
+  { id: "analyze", label: "Analyzing job description & core competency matrix" },
+  { id: "select", label: "Selecting high-yield experiences from verified history" },
+  { id: "xyz", label: "Drafting Harvard action-verb bullets (XYZ framework)" },
+  { id: "verify", label: "Auditing against zero-fabrication strict guidelines" },
+  { id: "pdf", label: "Rendering pixel-perfect Harvard one-page PDF" },
+];
+
 export default function Home() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [statusText, setStatusText] = useState<string>("Ready");
@@ -52,6 +67,11 @@ export default function Home() {
   const [isBuildComplete, setIsBuildComplete] = useState<boolean>(false);
   const [buildElapsed, setBuildElapsed] = useState<number>(0);
   const [buildExpanded, setBuildExpanded] = useState<boolean>(true);
+
+  // Live AI processing stepper state
+  const [processingPhase, setProcessingPhase] = useState<"parsing" | "tailoring" | null>(null);
+  const [processingStep, setProcessingStep] = useState<number>(0);
+  const [processingElapsed, setProcessingElapsed] = useState<number>(0);
 
   // Raw CV text and extracted profile
   const [cvText, setCvText] = useState<string>("");
@@ -109,6 +129,28 @@ export default function Home() {
 
     return () => {
       clearInterval(timerInterval);
+      timeouts.forEach(clearTimeout);
+    };
+  };
+
+  const startProcessingAnimation = (phase: "parsing" | "tailoring") => {
+    setProcessingPhase(phase);
+    setProcessingStep(0);
+    setProcessingElapsed(0);
+
+    const startTime = Date.now();
+    const timer = setInterval(() => {
+      const elapsed = Math.round(((Date.now() - startTime) / 100)) / 10;
+      setProcessingElapsed(elapsed);
+    }, 100);
+
+    const delays = phase === "parsing" ? [400, 1100, 1900] : [500, 1200, 2000, 2800];
+    const timeouts: NodeJS.Timeout[] = delays.map((delay, idx) =>
+      setTimeout(() => setProcessingStep(idx + 1), delay)
+    );
+
+    return () => {
+      clearInterval(timer);
       timeouts.forEach(clearTimeout);
     };
   };
@@ -185,6 +227,7 @@ export default function Home() {
     setStatusText("Extracting profile");
     setIsProcessing(true);
     setErrorMsg(null);
+    const stopAnim = startProcessingAnimation("parsing");
 
     try {
       const res = await fetch("/api/profile", {
@@ -220,7 +263,9 @@ export default function Home() {
       setErrorMsg(err.message || "An error occurred while extracting profile.");
       setStatusText("Error");
     } finally {
+      stopAnim();
       setIsProcessing(false);
+      setProcessingPhase(null);
       setAttachedFile(null);
       setInputText("");
     }
@@ -242,6 +287,7 @@ export default function Home() {
     setErrorMsg(null);
     setIsProcessing(true);
     setStatusText("Reading your CV");
+    const stopAnim = startProcessingAnimation("parsing");
 
     // Add user message to chat thread
     setMessages((prev) => [
@@ -268,11 +314,14 @@ export default function Home() {
         throw new Error(parseData.error || "Failed to extract text from PDF.");
       }
 
+      stopAnim();
       await processCvText(parseData.text, file.name);
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to process PDF.");
       setStatusText("Error");
       setIsProcessing(false);
+      setProcessingPhase(null);
+      stopAnim();
       setAttachedFile(null);
       setInputText("");
     }
@@ -287,6 +336,7 @@ export default function Home() {
     setErrorMsg(null);
     setIsProcessing(true);
     setStatusText(`Tailoring for ${activeRole.trim()}`);
+    const stopAnim = startProcessingAnimation("tailoring");
 
     try {
       const res = await fetch("/api/tailor", {
@@ -338,7 +388,9 @@ export default function Home() {
       setErrorMsg(err.message || "Failed to tailor resume.");
       setStatusText("Error");
     } finally {
+      stopAnim();
       setIsProcessing(false);
+      setProcessingPhase(null);
       setInputText("");
     }
   };
@@ -449,6 +501,9 @@ export default function Home() {
     setStatusText("Ready");
     setErrorMsg(null);
     setMessages([]);
+    setProcessingPhase(null);
+    setProcessingStep(0);
+    setProcessingElapsed(0);
     startBuildAnimation();
   };
 
@@ -620,87 +675,125 @@ export default function Home() {
             </div>
           ))}
 
-          {/* Typing / Thinking Ellipsis Indicator when AI is preparing an answer */}
+          {/* Active AI Processing Stepper when AI is calculating/extracting */}
           {isProcessing && (
             <div className="chat-message-row">
               <div className="chat-avatar">AI</div>
-              <div className="chat-bubble typing-bubble" title="AI is thinking...">
-                <span className="typing-dot" />
-                <span className="typing-dot" />
-                <span className="typing-dot" />
+              <div className="ai-processing-card">
+                <div className="ai-processing-header">
+                  <div className="ai-processing-title-row">
+                    <div className="ai-typing-dots">
+                      <span className="typing-dot" />
+                      <span className="typing-dot" />
+                      <span className="typing-dot" />
+                    </div>
+                    <span className="ai-processing-title">
+                      {processingPhase === "parsing"
+                        ? "Analyzing CV & Extracting Profile"
+                        : "Tailoring Harvard One-Page CV"}
+                    </span>
+                  </div>
+                  <span className="ai-processing-timer">
+                    {processingElapsed.toFixed(1)}s
+                  </span>
+                </div>
+
+                <div className="eduardo-build-list">
+                  <div className="eduardo-build-line" />
+                  <div
+                    className="eduardo-build-progress-line"
+                    style={{
+                      height: `${Math.min(
+                        100,
+                        Math.max(
+                          0,
+                          (processingStep /
+                            Math.max(
+                              1,
+                              (processingPhase === "parsing"
+                                ? CV_PARSE_STEPS.length
+                                : TAILOR_STEPS.length) - 1
+                            )) *
+                            100
+                        )
+                      )}%`,
+                    }}
+                  />
+                  {(processingPhase === "parsing" ? CV_PARSE_STEPS : TAILOR_STEPS).map(
+                    (s, idx) => {
+                      const isDone = processingStep > idx;
+                      const isActive = processingStep === idx;
+                      return (
+                        <div key={s.id} className="eduardo-build-item">
+                          <div
+                            className={`eduardo-build-dot ${
+                              isActive ? "active" : isDone ? "done" : ""
+                            }`}
+                          />
+                          <span
+                            className={`eduardo-build-label ${
+                              isActive ? "active" : isDone ? "done" : "pending"
+                            }`}
+                          >
+                            {s.label}
+                          </span>
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Extracted Profile Details Card (Shown directly in chat thread like Image 2) */}
+          {profile && (
+            <div className="chat-message-row">
+              <div className="chat-avatar">AI</div>
+              <div className="ai-result-summary-card">
+                <div className="timeline-header">
+                  <span className="timeline-title">
+                    <span style={{ fontWeight: 600 }}>✓</span> Processed CV in seconds
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="timeline-restart-btn"
+                  >
+                    RESTART
+                  </button>
+                </div>
+
+                <div className="timeline-list">
+                  <div className="timeline-line" />
+
+                  <div className="timeline-item">
+                    <span className="timeline-dot done" />
+                    <span>Reading profile text</span>
+                  </div>
+
+                  <div className="timeline-item">
+                    <span className="timeline-dot done" />
+                    <span>
+                      Extracted {profile.experience?.length || 0} roles • {profile.projects?.length || 0} projects • {profile.skills?.reduce((a, c) => a + (c.items?.length || 0), 0) || 0} skills
+                    </span>
+                  </div>
+
+                  <div className="timeline-item">
+                    <span className="timeline-dot done" />
+                    <span className="timeline-badge">
+                      <span style={{ color: "var(--color-live)", fontSize: 10 }}>●</span>
+                      <span>{profile.name}</span>
+                      <span style={{ color: "var(--color-fg-muted)" }}>candidate</span>
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
           {/* Anchor for auto-scroll */}
           <div ref={messagesEndRef} />
-        </div>
-      )}
-
-      {/* Step Timeline Tree (Eduardo Alba Inspo) */}
-      {profile && (
-        <div className="timeline-tree">
-          <div className="timeline-header">
-            <span className="timeline-title">
-              <span>✓</span> Processed CV in seconds
-            </span>
-            <button
-              type="button"
-              onClick={handleReset}
-              style={{
-                background: "none",
-                border: "none",
-                fontFamily: "var(--font-mono)",
-                fontSize: 11,
-                color: "var(--color-fg-muted)",
-                letterSpacing: "0.05em",
-                cursor: "pointer",
-              }}
-            >
-              RESTART
-            </button>
-          </div>
-
-          <div className="timeline-list">
-            <div className="timeline-line" />
-
-            <div className="timeline-item">
-              <span className="timeline-dot done" />
-              <span>Reading profile text</span>
-            </div>
-
-            <div className="timeline-item">
-              <span className="timeline-dot done" />
-              <span>
-                Extracted {profile.experience?.length || 0} roles • {profile.projects?.length || 0} projects • {profile.skills?.reduce((a, c) => a + (c.items?.length || 0), 0) || 0} skills
-              </span>
-            </div>
-
-            <div className="timeline-item">
-              <span className="timeline-dot done" />
-              <span className="timeline-badge">
-                <span style={{ color: "var(--color-live)", fontSize: 10 }}>●</span>
-                <span>{profile.name}</span>
-                <span style={{ color: "var(--color-fg-muted)" }}>candidate</span>
-              </span>
-            </div>
-
-            {isProcessing ? (
-              <div className="timeline-item">
-                <span className="timeline-dot active" />
-                <span style={{ color: "var(--color-accent-orange)", fontWeight: 500 }}>
-                  Tailoring bullets and verifying zero fabrication...
-                </span>
-              </div>
-            ) : step === 3 ? (
-              <div className="timeline-item">
-                <span className="timeline-dot done" />
-                <span style={{ color: "var(--color-live)", fontWeight: 500 }}>
-                  One-page Harvard PDF generated
-                </span>
-              </div>
-            ) : null}
-          </div>
         </div>
       )}
 
