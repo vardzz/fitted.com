@@ -669,14 +669,58 @@ input, textarea {
 }
 
 .chat-bubble.user {
-  background: #0a0a0a;
-  color: #ffffff;
-  border: 1px solid #0a0a0a;
+  background: #f4f4f5;
+  color: #000000;
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   border-top-right-radius: 4px;
   padding: 12px 18px;
   max-width: 480px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.chat-file-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 8px 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  animation: page-in var(--t-fast) var(--ease-out);
+}
+
+.chat-file-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #f4f4f5;
+  border: 1px solid var(--color-border);
+  color: var(--color-fg);
+  flex-shrink: 0;
+}
+
+.chat-file-info {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.chat-file-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-fg);
+}
+
+.chat-file-size {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-fg-muted);
 }
 
 .chat-file-pill {

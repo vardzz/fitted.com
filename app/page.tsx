@@ -351,13 +351,27 @@ export default function Home() {
     if (step === 1) {
       // If user attached a file, send the file
       if (attachedFile) {
-        handleFileUpload(attachedFile);
+        const file = attachedFile;
+        // Clear chatbox immediately
+        setAttachedFile(null);
+        setInputText("");
+        setIsTextareaMultiLine(false);
+        if (promptInputRef.current) {
+          promptInputRef.current.style.height = "24px";
+        }
+        handleFileUpload(file);
         return;
       }
 
       // If user typed / pasted CV text
       const trimmed = inputText.trim();
       if (trimmed) {
+        // Clear chatbox immediately
+        setInputText("");
+        setIsTextareaMultiLine(false);
+        if (promptInputRef.current) {
+          promptInputRef.current.style.height = "24px";
+        }
         setMessages((prev) => [
           ...prev,
           {
@@ -371,6 +385,13 @@ export default function Home() {
     } else if (step === 2) {
       const trimmed = inputText.trim();
       if (!trimmed) return;
+
+      // Clear chatbox immediately
+      setInputText("");
+      setIsTextareaMultiLine(false);
+      if (promptInputRef.current) {
+        promptInputRef.current.style.height = "24px";
+      }
 
       if (clarifyingQuestion) {
         setMessages((prev) => [
@@ -574,24 +595,28 @@ export default function Home() {
             >
               {m.sender === "ai" && <div className="chat-avatar">AI</div>}
 
-              <div className={`chat-bubble ${m.sender === "user" ? "user" : ""}`}>
-                {m.fileName ? (
-                  <div className="chat-file-pill">
+              {m.fileName ? (
+                <div className="chat-file-bubble">
+                  <div className="chat-file-icon">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                       <polyline points="14 2 14 8 20 8" />
                     </svg>
-                    <span>{m.fileName}</span>
+                  </div>
+                  <div className="chat-file-info">
+                    <span className="chat-file-name">{m.fileName}</span>
                     {m.fileSize && (
-                      <span style={{ opacity: 0.7, fontSize: 11 }}>({m.fileSize})</span>
+                      <span className="chat-file-size">({m.fileSize})</span>
                     )}
                   </div>
-                ) : (
+                </div>
+              ) : (
+                <div className={`chat-bubble ${m.sender === "user" ? "user" : ""}`}>
                   <p style={{ fontSize: 15, lineHeight: 1.5, margin: 0, whiteSpace: "pre-wrap" }}>
                     {m.text}
                   </p>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           ))}
 
