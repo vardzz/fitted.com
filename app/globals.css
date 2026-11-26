@@ -174,16 +174,17 @@ input, textarea {
 
 .eduardo-build-collapsible-inner {
   overflow: hidden;
+  padding: 6px 12px 8px 8px;
 }
 
 .eduardo-build-list {
   position: relative;
-  padding-left: 20px;
+  padding-left: 24px;
 }
 
 .eduardo-build-line {
   position: absolute;
-  left: 4px;
+  left: 6px;
   top: 7px;
   bottom: 8px;
   width: 1.5px;
@@ -193,7 +194,7 @@ input, textarea {
 
 .eduardo-build-progress-line {
   position: absolute;
-  left: 4px;
+  left: 6px;
   top: 7px;
   width: 1.5px;
   background-color: #27272a;
@@ -220,7 +221,7 @@ input, textarea {
 
 .eduardo-build-dot {
   position: absolute;
-  left: -20px;
+  left: -22px;
   top: 5px;
   width: 9.5px;
   height: 9.5px;
