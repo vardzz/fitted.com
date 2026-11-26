@@ -27,6 +27,7 @@ type ChatMessage = {
   text?: string;
   fileName?: string;
   fileSize?: string;
+  isProfileSummary?: boolean;
 };
 
 type BuildStep = {
@@ -254,7 +255,12 @@ export default function Home() {
       setMessages((prev) => [
         ...prev,
         {
-          id: `ai-ask-role-${Date.now()}`,
+          id: `ai-profile-summary-${Date.now()}`,
+          sender: "ai",
+          isProfileSummary: true,
+        },
+        {
+          id: `ai-ask-role-${Date.now() + 1}`,
           sender: "ai",
           text: `Hey ${firstName}, I've loaded your verified background. What role are you applying for?`,
         },
@@ -650,7 +656,40 @@ export default function Home() {
             >
               {m.sender === "ai" && <div className="chat-avatar">AI</div>}
 
-              {m.fileName ? (
+              {m.isProfileSummary && profile ? (
+                <div className="ai-result-summary-card">
+                  <div className="timeline-header">
+                    <span className="timeline-title">
+                      <span style={{ fontWeight: 600 }}>✓</span> Processed CV in seconds
+                    </span>
+                  </div>
+
+                  <div className="timeline-list">
+                    <div className="timeline-line" />
+
+                    <div className="timeline-item">
+                      <span className="timeline-dot done" />
+                      <span>Reading profile text</span>
+                    </div>
+
+                    <div className="timeline-item">
+                      <span className="timeline-dot done" />
+                      <span>
+                        Extracted {profile.experience?.length || 0} roles • {profile.projects?.length || 0} projects • {profile.skills?.reduce((a, c) => a + (c.items?.length || 0), 0) || 0} skills
+                      </span>
+                    </div>
+
+                    <div className="timeline-item">
+                      <span className="timeline-dot done" />
+                      <span className="timeline-badge">
+                        <span style={{ color: "var(--color-live)", fontSize: 10 }}>●</span>
+                        <span>{profile.name}</span>
+                        <span style={{ color: "var(--color-fg-muted)" }}>candidate</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : m.fileName ? (
                 <div className="chat-file-bubble">
                   <div className="chat-file-icon">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -741,45 +780,6 @@ export default function Home() {
                       );
                     }
                   )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Extracted Profile Details Card (Shown directly in chat thread like Image 2) */}
-          {profile && (
-            <div className="chat-message-row">
-              <div className="chat-avatar">AI</div>
-              <div className="ai-result-summary-card">
-                <div className="timeline-header">
-                  <span className="timeline-title">
-                    <span style={{ fontWeight: 600 }}>✓</span> Processed CV in seconds
-                  </span>
-                </div>
-
-                <div className="timeline-list">
-                  <div className="timeline-line" />
-
-                  <div className="timeline-item">
-                    <span className="timeline-dot done" />
-                    <span>Reading profile text</span>
-                  </div>
-
-                  <div className="timeline-item">
-                    <span className="timeline-dot done" />
-                    <span>
-                      Extracted {profile.experience?.length || 0} roles • {profile.projects?.length || 0} projects • {profile.skills?.reduce((a, c) => a + (c.items?.length || 0), 0) || 0} skills
-                    </span>
-                  </div>
-
-                  <div className="timeline-item">
-                    <span className="timeline-dot done" />
-                    <span className="timeline-badge">
-                      <span style={{ color: "var(--color-live)", fontSize: 10 }}>●</span>
-                      <span>{profile.name}</span>
-                      <span style={{ color: "var(--color-fg-muted)" }}>candidate</span>
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>
