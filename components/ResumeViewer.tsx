@@ -84,11 +84,24 @@ export default function ResumeViewer({ tailored, role }: ResumeViewerProps) {
               <button
                 type="button"
                 className="btn-primary"
-                style={{ background: "var(--color-accent-orange)" }}
                 onClick={handleDownloadClick}
                 disabled={loading}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "9px 18px",
+                  fontSize: 13.5,
+                  fontWeight: 500,
+                  borderRadius: "var(--radius-full)",
+                }}
               >
-                {downloadSaved ? "Saved ✓" : loading ? "Preparing PDF..." : "Download PDF"}
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span>{downloadSaved ? "Saved ✓" : loading ? "Preparing PDF..." : "Download PDF"}</span>
               </button>
             )}
           </PDFDownloadLink>
