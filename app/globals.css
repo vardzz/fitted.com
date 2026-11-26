@@ -61,6 +61,29 @@ input, textarea {
 }
 
 /* Containers */
+.container-centered {
+  max-width: 640px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: page-in var(--t-slow) var(--ease-out);
+}
+
+.container-centered .claude-onboarding {
+  width: 100%;
+  padding: 0 0 24px;
+}
+
+.container-centered .prompt-bar-container {
+  width: 100%;
+  margin-top: 0;
+}
+
 .container-narrow {
   max-width: 640px;
   margin: 0 auto;

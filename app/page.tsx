@@ -328,7 +328,13 @@ export default function Home() {
 
   return (
     <div
-      className={step === 3 ? "container-wide" : `container-narrow ${messages.length > 0 ? "has-chat" : ""}`}
+      className={
+        step === 3
+          ? "container-wide"
+          : messages.length === 0
+          ? "container-centered"
+          : "container-narrow has-chat"
+      }
       onDragOver={(e) => {
         e.preventDefault();
         if (step === 1) setIsDragOver(true);
@@ -348,7 +354,7 @@ export default function Home() {
 
       {/* Start Interface Header */}
       {step === 1 && messages.length === 0 && (
-        <div className="claude-onboarding" style={{ padding: "40px 0 28px" }}>
+        <div className="claude-onboarding">
           <div className="claude-hero-title-row">
             <h1 className="claude-hero-title">Let&apos;s fit your CV</h1>
           </div>
