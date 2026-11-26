@@ -28,6 +28,9 @@ type ChatMessage = {
   fileName?: string;
   fileSize?: string;
   isProfileSummary?: boolean;
+  isResumeResult?: boolean;
+  tailoredData?: TailoredResume;
+  role?: string;
 };
 
 type BuildStep = {
@@ -387,6 +390,9 @@ export default function Home() {
             id: `ai-ready-${Date.now()}`,
             sender: "ai",
             text: `Your tailored one-page Harvard-style resume for ${activeRole.trim()} is ready!`,
+            isResumeResult: true,
+            tailoredData: tailored,
+            role: activeRole.trim(),
           },
         ]);
       }
@@ -440,7 +446,7 @@ export default function Home() {
         ]);
         processCvText(trimmed);
       }
-    } else if (step === 2) {
+    } else if (step === 2 || step === 3) {
       const trimmed = inputText.trim();
       if (!trimmed) return;
 
@@ -451,7 +457,7 @@ export default function Home() {
         promptInputRef.current.style.height = "24px";
       }
 
-      if (clarifyingQuestion) {
+      if (step === 2 && clarifyingQuestion) {
         setMessages((prev) => [
           ...prev,
           {
@@ -516,9 +522,7 @@ export default function Home() {
   return (
     <div
       className={
-        step === 3
-          ? "container-wide"
-          : messages.length === 0
+        messages.length === 0
           ? "container-centered"
           : "container-narrow has-chat"
       }
@@ -656,7 +660,112 @@ export default function Home() {
             >
               {m.sender === "ai" && <div className="chat-avatar">AI</div>}
 
-              {m.isProfileSummary && profile ? (
+              {m.isResumeResult && (m.tailoredData || tailoredData) ? (
+                <div className="ai-resume-flow">
+                  <div className="chat-bubble">
+                    <p style={{ fontSize: 15, lineHeight: 1.5, margin: 0, fontWeight: 500 }}>
+                      {m.text}
+                    </p>
+                  </div>
+
+                  {/* Action Bar Pills */}
+                  <div className="chat-action-bar">
+                    <button
+                      type="button"
+                      className="btn-chat-action"
+                      onClick={() => {
+                        setStep(2);
+                        setInputText(m.role || roleInput || "");
+                        promptInputRef.current?.focus();
+                      }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12" />
+                        <polyline points="12 19 5 12 12 5" />
+                      </svg>
+                      <span>Edit Target Role</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-chat-action"
+                      onClick={handleReset}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                      <span>Upload New CV</span>
+                    </button>
+                  </div>
+
+                  {/* TOP: Tailored Harvard Resume */}
+                  <div className="ai-resume-preview-card">
+                    <ResumeViewer
+                      tailored={m.tailoredData || tailoredData!}
+                      role={m.role || roleInput}
+                    />
+                  </div>
+
+                  {/* BOTTOM: Tailoring Insights Stack */}
+                  <div className="ai-insights-stack">
+                    {/* What I cut and why */}
+                    <div className="insight-card">
+                      <div className="insight-card-header">
+                        <h3 className="insight-card-title">What I cut and why</h3>
+                        <p className="insight-card-subtitle">
+                          Condensed or omitted to ensure a single-page Harvard layout.
+                        </p>
+                      </div>
+
+                      {(m.tailoredData || tailoredData)?.dropped &&
+                      (m.tailoredData || tailoredData)!.dropped.length > 0 ? (
+                        <ul className="insight-list">
+                          {(m.tailoredData || tailoredData)!.dropped.map((cut, idx) => (
+                            <li key={idx} className="insight-item">
+                              <span className="insight-dot cut" />
+                              <div>
+                                <strong>{cut.item}:</strong>{" "}
+                                <span className="insight-reason">{cut.reason}</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="insight-empty">
+                          All profile items were fitted into the one-page resume.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Not shown in your CV (Gaps) */}
+                    <div className="insight-card">
+                      <div className="insight-card-header">
+                        <h3 className="insight-card-title">Not shown in your CV</h3>
+                        <p className="insight-card-subtitle">
+                          Role requirements not found in your CV. We never fabricate facts.
+                        </p>
+                      </div>
+
+                      {(m.tailoredData || tailoredData)?.gaps &&
+                      (m.tailoredData || tailoredData)!.gaps.length > 0 ? (
+                        <ul className="insight-list">
+                          {(m.tailoredData || tailoredData)!.gaps.map((gap, idx) => (
+                            <li key={idx} className="insight-item">
+                              <span className="insight-dot gap" />
+                              <span>{gap}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="insight-empty positive">
+                          No missing requirements identified for this role!
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : m.isProfileSummary && profile ? (
                 <div className="ai-result-summary-card">
                   <div className="timeline-header">
                     <span className="timeline-title">
@@ -791,7 +900,7 @@ export default function Home() {
       )}
 
       {/* Chatbox: inline below hero at start (only when build completes), fixed at bottom once message is sent */}
-      {step !== 3 && (messages.length > 0 || isBuildComplete) && (
+      {(messages.length > 0 || isBuildComplete) && (
         <div
           className={
             messages.length > 0
@@ -861,9 +970,11 @@ export default function Home() {
                       ? attachedFile
                         ? "Add notes or press ↵ to process CV..."
                         : "Attach CV PDF or type/paste your CV text here..."
-                      : clarifyingQuestion
-                      ? "Type your clarification..."
-                      : "e.g. Senior Frontend Engineer, Full Stack Developer..."
+                      : step === 2
+                      ? clarifyingQuestion
+                        ? "Type your clarification..."
+                        : "e.g. Senior Frontend Engineer, Full Stack Developer..."
+                      : "Try another role (e.g. Full Stack Engineer, Engineering Manager)..."
                   }
                 />
 
@@ -932,134 +1043,6 @@ export default function Home() {
             )}
           </div>
         </div>
-      )}
-
-      {/* Step 3: Result View */}
-      {step === 3 && tailoredData && (
-        <section style={{ marginTop: 24 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={() => {
-                setStep(2);
-                setInputText("");
-              }}
-            >
-              ← Edit Target Role
-            </button>
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={handleReset}
-            >
-              Upload New CV
-            </button>
-          </div>
-
-          <div className="result-grid">
-            {/* Left Column: PDF Preview */}
-            <div>
-              <ResumeViewer tailored={tailoredData} role={roleInput} />
-            </div>
-
-            {/* Right Column: Dropped items & Gaps panels */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              {/* What I cut and why */}
-              <div className="card">
-                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4, letterSpacing: "-0.01em" }}>
-                  What I cut and why
-                </h3>
-                <p style={{ fontSize: 13, color: "var(--color-fg-muted)", marginBottom: 16 }}>
-                  Condensed or omitted to ensure a single-page Harvard layout.
-                </p>
-
-                {tailoredData.dropped && tailoredData.dropped.length > 0 ? (
-                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                    {tailoredData.dropped.map((cut, idx) => (
-                      <li
-                        key={idx}
-                        style={{
-                          display: "flex",
-                          alignItems: "flex-start",
-                          gap: 10,
-                          fontSize: 13.5,
-                          lineHeight: 1.5,
-                          marginBottom: 10,
-                        }}
-                      >
-                        <span
-                          style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: "50%",
-                            backgroundColor: "var(--color-fg-muted)",
-                            marginTop: 7,
-                            flexShrink: 0,
-                          }}
-                        />
-                        <div>
-                          <strong>{cut.item}:</strong>{" "}
-                          <span style={{ color: "var(--color-fg-muted)" }}>
-                            {cut.reason}
-                          </span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p style={{ fontSize: 13.5, color: "var(--color-fg-muted)" }}>
-                    All profile items were fitted into the one-page resume.
-                  </p>
-                )}
-              </div>
-
-              {/* Not shown in your CV (Gaps) */}
-              <div className="card">
-                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4, letterSpacing: "-0.01em" }}>
-                  Not shown in your CV
-                </h3>
-                <p style={{ fontSize: 13, color: "var(--color-fg-muted)", marginBottom: 16 }}>
-                  Role requirements not found in your CV. We never fabricate facts.
-                </p>
-
-                {tailoredData.gaps && tailoredData.gaps.length > 0 ? (
-                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                    {tailoredData.gaps.map((gap, idx) => (
-                      <li
-                        key={idx}
-                        style={{
-                          display: "flex",
-                          alignItems: "flex-start",
-                          gap: 10,
-                          fontSize: 13.5,
-                          lineHeight: 1.5,
-                          marginBottom: 8,
-                        }}
-                      >
-                        <span
-                          style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: "50%",
-                            backgroundColor: "var(--color-warn)",
-                            marginTop: 7,
-                            flexShrink: 0,
-                          }}
-                        />
-                        <span style={{ color: "var(--color-fg)" }}>{gap}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p style={{ fontSize: 13.5, color: "var(--color-live)", fontWeight: 500 }}>
-                    No missing requirements identified for this role!
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
       )}
     </div>
   );
