@@ -1271,8 +1271,156 @@ input, textarea {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sheet);
-  overflow: hidden;
-  height: 760px;
+  overflow: visible;
+}
+
+/* Native Harvard Academic Paper Sheet Preview (Full Page Flow) */
+.harvard-paper-sheet {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sheet);
+  padding: 44px 48px;
+  font-family: "Times New Roman", Times, Georgia, "Nimbus Roman No9 L", serif;
+  color: #000000;
+  line-height: 1.25;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.harvard-header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.harvard-name {
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px 0;
+  text-align: center;
+  color: #000000;
+}
+
+.harvard-contact-line {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: #000000;
+  gap: 2px;
+}
+
+.harvard-contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.harvard-icon {
+  display: inline-block;
+  vertical-align: middle;
+  color: #000000;
+}
+
+.harvard-link {
+  color: #000000;
+  text-decoration: none;
+}
+
+.harvard-link:hover {
+  text-decoration: underline;
+}
+
+.harvard-separator {
+  margin: 0 6px;
+  font-size: 11.5px;
+  color: #000000;
+}
+
+.harvard-section {
+  margin-top: 10px;
+  margin-bottom: 4px;
+}
+
+.harvard-section-title {
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-transform: none;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #000000;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.01em;
+  color: #000000;
+}
+
+.harvard-entry {
+  margin-bottom: 6px;
+}
+
+.harvard-row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.harvard-entry-title {
+  flex: 1;
+}
+
+.harvard-entry-date {
+  font-style: italic;
+  font-size: 11.5px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.harvard-italic {
+  font-style: italic;
+}
+
+.harvard-bullet-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 2px;
+  padding-left: 2px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.harvard-bullet-dot {
+  font-size: 11px;
+  line-height: 1.35;
+  width: 8px;
+  flex-shrink: 0;
+}
+
+.harvard-bullet-text {
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .harvard-paper-sheet {
+    padding: 24px 20px;
+  }
+  .harvard-name {
+    font-size: 20px;
+  }
+  .harvard-row-between {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .harvard-entry-date {
+    text-align: left;
+  }
 }
 
 /* Chatbot Resume Flow Layout */

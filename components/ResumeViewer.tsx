@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import type { TailoredResume } from "@/lib/types";
+import HarvardPaper from "./HarvardPaper";
 
 interface ResumeViewerProps {
   tailored: TailoredResume;
@@ -108,33 +109,8 @@ export default function ResumeViewer({ tailored, role }: ResumeViewerProps) {
         )}
       </div>
 
-      {/* PDF Preview Sheet */}
-      <div className="pdf-preview-sheet">
-        {isClient && PDFViewer && ResumePdf ? (
-          <PDFViewer
-            width="100%"
-            height="100%"
-            showToolbar={false}
-            style={{ border: "none" }}
-          >
-            <ResumePdf data={tailored.resume} />
-          </PDFViewer>
-        ) : (
-          <div
-            style={{
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--color-fg-muted)",
-              fontFamily: "var(--font-mono)",
-              fontSize: 13,
-            }}
-          >
-            Rendering Harvard PDF preview...
-          </div>
-        )}
-      </div>
+      {/* Full-Length Harvard Resume Sheet (Zero Inner Scroll) */}
+      <HarvardPaper data={tailored.resume} />
     </div>
   );
 }
