@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractText } from "unpdf";
+import { extractCleanTextFromPdf } from "@/lib/pdf-reader";
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB Vercel limit
 
@@ -37,30 +37,8 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
 
-    const { text } = await extractText(uint8Array, { mergePages: true });
-
-    const rawText = typeof text === "string" ? text : Array.isArray(text as any) ? (text as any).join("\n\n") : String(text || "");
-
-    // Industrial text cleaning & PDF artifact healing
-    const cleanedText = rawText
-      // Normalize line endings
-      .replace(/\r\n/g, "\n")
-      .replace(/\r/g, "\n")
-      // Remove null bytes and zero-width spaces common in PDF font streams
-      .replace(/[\u0000\u200B\uFEFF]/g, "")
-      // Normalize non-breaking spaces & full-width spaces
-      .replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, " ")
-      // Heal hyphenated line-break words (e.g. "docu-\n  mentation" -> "documentation", "recog-\n  nition" -> "recognition")
-      .replace(/(\b[a-zA-Z]{2,})-\s*\n\s*([a-zA-Z]{2,}\b)/g, "$1$2")
-      // Heal hyphenated words separated by spacing (e.g. "docu- mentation" -> "documentation")
-      .replace(/(\b[a-zA-Z]{3,})-\s+([a-zA-Z]{3,}\b)/g, "$1$2")
-      // Reattach standalone bullet points on their own line (e.g. "•\nSome text" -> "• Some text")
-      .replace(/([•\-*–—◦▪▫‣⁃➢·])\s*\n\s*([a-zA-Z0-9])/g, "$1 $2")
-      // Clean up whitespace before newlines
-      .replace(/[ \t]+\n/g, "\n")
-      // Collapse excessive blank lines
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
+    // Extract text with geometric coordinate line reconstruction and duplicate layer removal
+    const cleanedText = await extractCleanTextFromPdf(uint8Array);
 
     if (cleanedText.length < 50) {
       return NextResponse.json(
