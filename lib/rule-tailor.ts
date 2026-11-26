@@ -131,9 +131,15 @@ export function tailorResumeRuleBased(
   const dropped: { item: string; reason: string }[] = [];
   const gaps: string[] = [];
 
-  // 3. Tailor Experience (Select Top 3-4 Harvard Roles & Top 3 Bullets per Role)
-  const MAX_ROLES = 3;
-  const MAX_BULLETS_PER_ROLE = 3;
+  // 3. Dynamic Page Budgeting for Harvard 1-Page Layout
+  // Total bullet budget across the resume is 10-13 bullets depending on section count.
+  const numRoles = (profile.experience || []).length;
+  const numProjects = (profile.projects || []).length;
+
+  // Dynamically allocate bullets per role based on total experience entries
+  const MAX_ROLES = Math.min(3, Math.max(1, numRoles));
+  const maxBulletsPerRole = numRoles <= 1 ? 5 : numRoles === 2 ? 4 : 3;
+  const maxBulletsPerProject = numProjects <= 1 ? 3 : 2;
 
   const scoredExperience = (profile.experience || []).map((exp, roleIdx) => {
     // Score each bullet
@@ -162,8 +168,8 @@ export function tailorResumeRuleBased(
     if (idx < MAX_ROLES) {
       // Sort bullets by score descending
       const sortedBullets = [...exp.scoredBullets].sort((a, b) => b.score - a.score);
-      const keptBullets = sortedBullets.slice(0, MAX_BULLETS_PER_ROLE).map((b) => b.text);
-      const droppedBullets = sortedBullets.slice(MAX_BULLETS_PER_ROLE);
+      const keptBullets = sortedBullets.slice(0, maxBulletsPerRole).map((b) => b.text);
+      const droppedBullets = sortedBullets.slice(maxBulletsPerRole);
 
       for (const d of droppedBullets) {
         dropped.push({
@@ -177,7 +183,7 @@ export function tailorResumeRuleBased(
         org: exp.org,
         start: exp.start,
         end: exp.end,
-        bullets: keptBullets.length > 0 ? keptBullets : exp.bullets.slice(0, 2),
+        bullets: keptBullets.length > 0 ? keptBullets : exp.bullets.slice(0, maxBulletsPerRole),
       });
     } else {
       // Entire role dropped due to Harvard 1-page layout budget
@@ -218,8 +224,8 @@ export function tailorResumeRuleBased(
   scoredProjects.forEach((proj, idx) => {
     if (idx < MAX_PROJECTS) {
       const sortedBullets = [...proj.scoredBullets].sort((a, b) => b.score - a.score);
-      const kept = sortedBullets.slice(0, 2).map((b) => b.text);
-      const droppedProjBullets = sortedBullets.slice(2);
+      const kept = sortedBullets.slice(0, maxBulletsPerProject).map((b) => b.text);
+      const droppedProjBullets = sortedBullets.slice(maxBulletsPerProject);
 
       for (const d of droppedProjBullets) {
         dropped.push({
@@ -234,7 +240,7 @@ export function tailorResumeRuleBased(
         role: proj.role,
         start: proj.start,
         end: proj.end,
-        bullets: kept.length > 0 ? kept : proj.bullets.slice(0, 2),
+        bullets: kept.length > 0 ? kept : proj.bullets.slice(0, maxBulletsPerProject),
       });
     } else {
       dropped.push({
