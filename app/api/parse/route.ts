@@ -39,19 +39,40 @@ export async function POST(req: NextRequest) {
 
     const { text } = await extractText(uint8Array, { mergePages: true });
 
-    const trimmedText = (text || "").trim();
+    const rawText = (typeof text === "string" ? text : Array.isArray(text) ? text.join("\n\n") : "") || "";
 
-    if (trimmedText.length < 200) {
+    // Industrial text cleaning & PDF artifact healing
+    const cleanedText = rawText
+      // Normalize line endings
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n")
+      // Remove null bytes and zero-width spaces common in PDF font streams
+      .replace(/[\u0000\u200B\uFEFF]/g, "")
+      // Normalize non-breaking spaces & full-width spaces
+      .replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, " ")
+      // Heal hyphenated line-break words (e.g. "docu-\n  mentation" -> "documentation", "recog-\n  nition" -> "recognition")
+      .replace(/(\b[a-zA-Z]{2,})-\s*\n\s*([a-zA-Z]{2,}\b)/g, "$1$2")
+      // Heal hyphenated words separated by spacing (e.g. "docu- mentation" -> "documentation")
+      .replace(/(\b[a-zA-Z]{3,})-\s+([a-zA-Z]{3,}\b)/g, "$1$2")
+      // Reattach standalone bullet points on their own line (e.g. "•\nSome text" -> "• Some text")
+      .replace(/([•\-*–—◦▪▫‣⁃➢·])\s*\n\s*([a-zA-Z0-9])/g, "$1 $2")
+      // Clean up whitespace before newlines
+      .replace(/[ \t]+\n/g, "\n")
+      // Collapse excessive blank lines
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+
+    if (cleanedText.length < 50) {
       return NextResponse.json(
         {
           error:
-            "This PDF has no readable text (it may be a scan). Paste your CV text instead.",
+            "This PDF has no readable text (it may be a scanned image). Paste your CV text instead.",
         },
         { status: 400 }
       );
     }
 
-    return NextResponse.json({ text: trimmedText });
+    return NextResponse.json({ text: cleanedText });
   } catch (err: any) {
     console.error("PDF parse error:", err);
     return NextResponse.json(
