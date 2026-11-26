@@ -32,31 +32,13 @@ type ChatMessage = {
 type BuildStep = {
   id: string;
   label: string;
-  badges?: Array<{
-    id: string;
-    dotColor: string;
-    flag: string;
-    name: string;
-    tag?: string;
-  }>;
-  moreText?: string;
 };
 
 const BUILD_STEPS: BuildStep[] = [
-  { id: "read", label: "Reading profile" },
-  { id: "photo", label: "Loading Harvard PDF layout" },
-  { id: "intro", label: "Calibrating zero-fabrication rules" },
-  {
-    id: "connected",
-    label: "Connected · 4 here",
-    badges: [
-      { id: "b1", dotColor: "#f97316", flag: "🇵🇭", name: "Tangerine Bison", tag: "you" },
-      { id: "b2", dotColor: "#a855f7", flag: "🇨🇦", name: "Plum Lemur" },
-      { id: "b3", dotColor: "#3b82f6", flag: "🇵🇭", name: "Azure Crane" },
-    ],
-    moreText: "+1 more",
-  },
-  { id: "details", label: "Drawing details" },
+  { id: "harvard", label: "Loading Harvard PDF layout engine" },
+  { id: "verify", label: "Calibrating zero-fabrication guardrails" },
+  { id: "parser", label: "Preparing CV parser & role matcher" },
+  { id: "ready", label: "Fitted environment ready" },
 ];
 
 export default function Home() {
@@ -109,7 +91,7 @@ export default function Home() {
       setBuildElapsed(elapsed);
     }, 100);
 
-    const stepDelays = [350, 750, 1150, 1650, 2100];
+    const stepDelays = [350, 750, 1150, 1550];
     const timeouts: NodeJS.Timeout[] = [];
 
     stepDelays.forEach((delay, idx) => {
@@ -117,7 +99,7 @@ export default function Home() {
         setBuildStep(idx + 1);
         if (idx === stepDelays.length - 1) {
           clearInterval(timerInterval);
-          setBuildElapsed(2.1);
+          setBuildElapsed(1.6);
           setIsBuildComplete(true);
         }
       }, delay);
@@ -491,24 +473,6 @@ export default function Home() {
                     >
                       {s.label}
                     </span>
-                    {s.badges && (isDone || isActive) && (
-                      <div className="eduardo-badges-row">
-                        {s.badges.map((b) => (
-                          <span key={b.id} className="eduardo-badge">
-                            <span
-                              className="live-dot"
-                              style={{ backgroundColor: b.dotColor }}
-                            />
-                            <span style={{ fontSize: 13 }}>{b.flag}</span>
-                            <span>{b.name}</span>
-                            {b.tag && <span className="badge-tag">{b.tag}</span>}
-                          </span>
-                        ))}
-                        {s.moreText && (
-                          <span className="eduardo-more-text">{s.moreText}</span>
-                        )}
-                      </div>
-                    )}
                   </div>
                 );
               })}
