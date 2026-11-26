@@ -79,7 +79,7 @@ input, textarea {
   width: 100%;
   max-width: 580px;
   margin: 0 auto 28px;
-  animation: page-in var(--t-base) var(--ease-out);
+  animation: page-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: left;
 }
 
@@ -100,8 +100,8 @@ input, textarea {
   align-items: center;
   gap: 7px;
   cursor: pointer;
-  padding: 0;
-  transition: color var(--t-fast) var(--ease-out);
+  padding: 2px 0;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .eduardo-build-toggle:hover {
@@ -110,31 +110,29 @@ input, textarea {
 
 .eduardo-chevron {
   display: inline-block;
-  transition: transform var(--t-fast) var(--ease-out);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .eduardo-chevron.collapsed {
   transform: rotate(-90deg);
 }
 
-.eduardo-replay-btn {
-  background: none;
-  border: none;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: #a1a1aa;
-  cursor: pointer;
-  padding: 3px 8px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  font-weight: 500;
-  transition: all var(--t-fast) var(--ease-out);
+/* Butter-smooth Collapsible Container */
+.eduardo-build-collapsible {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  opacity: 1;
 }
 
-.eduardo-replay-btn:hover {
-  color: var(--color-fg);
-  background: rgba(0, 0, 0, 0.04);
+.eduardo-build-collapsible.collapsed {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.eduardo-build-collapsible-inner {
+  overflow: hidden;
 }
 
 .eduardo-build-list {
@@ -149,6 +147,19 @@ input, textarea {
   bottom: 8px;
   width: 1.5px;
   background-color: #e4e4e7;
+  border-radius: 1px;
+}
+
+.eduardo-build-progress-line {
+  position: absolute;
+  left: 4px;
+  top: 7px;
+  width: 1.5px;
+  background-color: #27272a;
+  border-radius: 1px;
+  transition: height 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: calc(100% - 15px);
+  z-index: 1;
 }
 
 .eduardo-build-item {
@@ -159,7 +170,7 @@ input, textarea {
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
-  animation: page-in 0.2s var(--ease-out);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .eduardo-build-item:last-child {
@@ -174,86 +185,83 @@ input, textarea {
   height: 9.5px;
   border-radius: 50%;
   background-color: #d4d4d8;
-  transition: all var(--t-fast) var(--ease-out);
+  z-index: 2;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.9);
 }
 
 .eduardo-build-dot.done {
   background-color: #27272a;
+  transform: scale(1);
+  box-shadow: none;
 }
 
 .eduardo-build-dot.active {
   background-color: #f95721;
-  box-shadow: 0 0 0 3px rgba(249, 87, 33, 0.25);
-  animation: twinkle 1s ease-in-out infinite;
+  transform: scale(1.18);
+  box-shadow: 0 0 0 4px rgba(249, 87, 33, 0.22);
+  animation: smooth-pulse 1.3s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
+}
+
+@keyframes smooth-pulse {
+  0% {
+    box-shadow: 0 0 0 2px rgba(249, 87, 33, 0.15);
+  }
+  100% {
+    box-shadow: 0 0 0 5px rgba(249, 87, 33, 0.32);
+  }
 }
 
 .eduardo-build-label {
   font-family: var(--font-mono);
   font-size: 13px;
   color: #a1a1aa;
-  transition: color var(--t-fast) var(--ease-out);
+  transition: color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateX(0);
 }
 
 .eduardo-build-label.active {
   color: var(--color-fg);
   font-weight: 500;
+  transform: translateX(2px);
 }
 
 .eduardo-build-label.done {
   color: #52525b;
 }
 
-.eduardo-badges-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 6px;
-}
-
-.eduardo-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #ffffff;
-  border: 1px solid #e4e4e7;
-  border-radius: var(--radius-full);
-  padding: 3px 10px;
-  font-size: 12px;
-  font-family: var(--font-mono);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-}
-
-.eduardo-badge .live-dot {
-  width: 6.5px;
-  height: 6.5px;
-  border-radius: 50%;
-}
-
-.eduardo-badge .badge-tag {
-  color: #a1a1aa;
-  font-size: 11px;
-}
-
-.eduardo-more-text {
-  font-size: 12px;
-  font-family: var(--font-mono);
-  color: #71717a;
-}
-
+/* Staggered Cascading Reveal */
 .eduardo-content-reveal {
   width: 100%;
-  animation: slide-up-reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes slide-up-reveal {
+.stagger-1 {
+  animation: smooth-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.stagger-2 {
+  animation: smooth-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+}
+
+.stagger-3 {
+  animation: smooth-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both;
+}
+
+.stagger-4 {
+  animation: smooth-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.24s both;
+}
+
+@keyframes smooth-rise {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(20px) scale(0.99);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 

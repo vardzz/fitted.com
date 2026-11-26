@@ -91,7 +91,7 @@ export default function Home() {
       setBuildElapsed(elapsed);
     }, 100);
 
-    const stepDelays = [350, 750, 1150, 1550];
+    const stepDelays = [420, 880, 1340, 1800];
     const timeouts: NodeJS.Timeout[] = [];
 
     stepDelays.forEach((delay, idx) => {
@@ -99,7 +99,7 @@ export default function Home() {
         setBuildStep(idx + 1);
         if (idx === stepDelays.length - 1) {
           clearInterval(timerInterval);
-          setBuildElapsed(1.6);
+          setBuildElapsed(1.8);
           setIsBuildComplete(true);
         }
       }, delay);
@@ -446,45 +446,56 @@ export default function Home() {
             </button>
           </div>
 
-          {buildExpanded && (
-            <div className="eduardo-build-list">
-              <div className="eduardo-build-line" />
-              {BUILD_STEPS.map((s, idx) => {
-                const isDone = buildStep > idx;
-                const isActive = buildStep === idx && !isBuildComplete;
-                return (
-                  <div key={s.id} className="eduardo-build-item">
-                    <div
-                      className={`eduardo-build-dot ${
-                        isActive ? "active" : isDone ? "done" : ""
-                      }`}
-                    />
-                    <span
-                      className={`eduardo-build-label ${
-                        isActive ? "active" : isDone ? "done" : "pending"
-                      }`}
-                    >
-                      {s.label}
-                    </span>
-                  </div>
-                );
-              })}
+          <div className={`eduardo-build-collapsible ${buildExpanded ? "expanded" : "collapsed"}`}>
+            <div className="eduardo-build-collapsible-inner">
+              <div className="eduardo-build-list">
+                <div className="eduardo-build-line" />
+                <div
+                  className="eduardo-build-progress-line"
+                  style={{
+                    height: `${Math.min(
+                      100,
+                      Math.max(0, (buildStep / Math.max(1, BUILD_STEPS.length - 1)) * 100)
+                    )}%`,
+                  }}
+                />
+                {BUILD_STEPS.map((s, idx) => {
+                  const isDone = buildStep > idx;
+                  const isActive = buildStep === idx && !isBuildComplete;
+                  return (
+                    <div key={s.id} className="eduardo-build-item">
+                      <div
+                        className={`eduardo-build-dot ${
+                          isActive ? "active" : isDone ? "done" : ""
+                        }`}
+                      />
+                      <span
+                        className={`eduardo-build-label ${
+                          isActive ? "active" : isDone ? "done" : "pending"
+                        }`}
+                      >
+                        {s.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       )}
 
       {/* Start Interface Header (Revealed once build finishes) */}
       {step === 1 && messages.length === 0 && isBuildComplete && (
         <div className="claude-onboarding eduardo-content-reveal">
-          <div className="claude-hero-title-row">
+          <div className="claude-hero-title-row stagger-1">
             <h1 className="claude-hero-title">Let&apos;s fit your CV</h1>
           </div>
-          <p className="claude-hero-subtitle">
+          <p className="claude-hero-subtitle stagger-2">
             Attach your CV as a PDF or type your background to craft an academic Harvard-style one-page resume.
           </p>
 
-          <div className="claude-suggestion-chips">
+          <div className="claude-suggestion-chips stagger-3">
             <button
               type="button"
               className="claude-chip"
@@ -632,7 +643,7 @@ export default function Home() {
           className={
             messages.length > 0
               ? "chatbox-fixed-bottom"
-              : "prompt-bar-container eduardo-content-reveal"
+              : "prompt-bar-container eduardo-content-reveal stagger-4"
           }
         >
           <div className={messages.length > 0 ? "chatbox-fixed-inner" : ""}>
