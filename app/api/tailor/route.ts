@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { tailorResumeRuleBased } from "@/lib/rule-tailor";
 import { callLLM } from "@/lib/llm";
 import { TAILORING_SYSTEM_PROMPT } from "@/lib/prompts";
 import { TailoredResume, Profile } from "@/lib/types";
@@ -35,6 +36,39 @@ export async function POST(req: NextRequest) {
         { error: "Target role is required." },
         { status: 400 }
       );
+    }
+
+    // PRIMARY: Pure Rule-Based Engine (Zero AI / No Models at All)
+    // Uses algorithmic keyword matching (TF-IDF / token overlap) to score existing CV bullets
+    try {
+      const ruleTailored = tailorResumeRuleBased(
+        profile,
+        role,
+        posting,
+        clarification
+      );
+
+      // If clarification is needed, return question immediately
+      if (ruleTailored.needs_clarification) {
+        return NextResponse.json({ tailored: ruleTailored, engine: "rule-based" });
+      }
+
+      // Verify faithfulness against source CV text
+      const verified = cvText
+        ? verifyFaithfulness(cvText, ruleTailored)
+        : ruleTailored;
+
+      return NextResponse.json({ tailored: verified, engine: "rule-based" });
+    } catch (ruleErr) {
+      console.warn("Rule-based tailoring encountered issue, attempting fallback:", ruleErr);
+    }
+
+    // FALLBACK: LLM (Only used if rule-based engine failed and an API key is available)
+    if (!process.env.LLM_API_KEY) {
+      // Re-run rule-based without throwing
+      const ruleTailored = tailorResumeRuleBased(profile, role, posting, clarification);
+      const verified = cvText ? verifyFaithfulness(cvText, ruleTailored) : ruleTailored;
+      return NextResponse.json({ tailored: verified, engine: "rule-based" });
     }
 
     const clarificationInstruction = clarification
@@ -104,17 +138,15 @@ ${JSON.stringify(profile, null, 2)}`;
       prompt
     );
 
-    // If clarification was provided, ensure needs_clarification is false
     if (clarification && rawTailored.needs_clarification) {
       rawTailored.needs_clarification = false;
     }
 
-    // Run faithfulness check against original CV text if available
     const verified = cvText
       ? verifyFaithfulness(cvText, rawTailored)
       : rawTailored;
 
-    return NextResponse.json({ tailored: verified });
+    return NextResponse.json({ tailored: verified, engine: "llm-fallback" });
   } catch (err: any) {
     console.error("Tailoring error:", err);
     return NextResponse.json(
