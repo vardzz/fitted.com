@@ -444,13 +444,6 @@ export default function Home() {
                   : `Building in ${buildElapsed.toFixed(1)}s`}
               </span>
             </button>
-            <button
-              type="button"
-              className="eduardo-replay-btn"
-              onClick={startBuildAnimation}
-            >
-              REPLAY
-            </button>
           </div>
 
           {buildExpanded && (
