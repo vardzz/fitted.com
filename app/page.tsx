@@ -755,13 +755,6 @@ export default function Home() {
                   <span className="timeline-title">
                     <span style={{ fontWeight: 600 }}>✓</span> Processed CV in seconds
                   </span>
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="timeline-restart-btn"
-                  >
-                    RESTART
-                  </button>
                 </div>
 
                 <div className="timeline-list">
