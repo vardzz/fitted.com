@@ -29,11 +29,47 @@ type ChatMessage = {
   fileSize?: string;
 };
 
+type BuildStep = {
+  id: string;
+  label: string;
+  badges?: Array<{
+    id: string;
+    dotColor: string;
+    flag: string;
+    name: string;
+    tag?: string;
+  }>;
+  moreText?: string;
+};
+
+const BUILD_STEPS: BuildStep[] = [
+  { id: "read", label: "Reading profile" },
+  { id: "photo", label: "Loading Harvard PDF layout" },
+  { id: "intro", label: "Calibrating zero-fabrication rules" },
+  {
+    id: "connected",
+    label: "Connected · 4 here",
+    badges: [
+      { id: "b1", dotColor: "#f97316", flag: "🇵🇭", name: "Tangerine Bison", tag: "you" },
+      { id: "b2", dotColor: "#a855f7", flag: "🇨🇦", name: "Plum Lemur" },
+      { id: "b3", dotColor: "#3b82f6", flag: "🇵🇭", name: "Azure Crane" },
+    ],
+    moreText: "+1 more",
+  },
+  { id: "details", label: "Drawing details" },
+];
+
 export default function Home() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [statusText, setStatusText] = useState<string>("Ready");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Eduardo Alba Onboarding Build Animation state
+  const [buildStep, setBuildStep] = useState<number>(0);
+  const [isBuildComplete, setIsBuildComplete] = useState<boolean>(false);
+  const [buildElapsed, setBuildElapsed] = useState<number>(0);
+  const [buildExpanded, setBuildExpanded] = useState<boolean>(true);
 
   // Raw CV text and extracted profile
   const [cvText, setCvText] = useState<string>("");
@@ -61,11 +97,55 @@ export default function Home() {
   const promptInputRef = useRef<HTMLInputElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  const startBuildAnimation = () => {
+    setBuildStep(0);
+    setIsBuildComplete(false);
+    setBuildElapsed(0);
+    setBuildExpanded(true);
+
+    const startTime = Date.now();
+    const timerInterval = setInterval(() => {
+      const elapsed = Math.min(3, Math.round(((Date.now() - startTime) / 1000) * 10) / 10);
+      setBuildElapsed(elapsed);
+    }, 100);
+
+    const stepDelays = [350, 750, 1150, 1650, 2100];
+    const timeouts: NodeJS.Timeout[] = [];
+
+    stepDelays.forEach((delay, idx) => {
+      const t = setTimeout(() => {
+        setBuildStep(idx + 1);
+        if (idx === stepDelays.length - 1) {
+          clearInterval(timerInterval);
+          setBuildElapsed(2.1);
+          setIsBuildComplete(true);
+        }
+      }, delay);
+      timeouts.push(t);
+    });
+
+    return () => {
+      clearInterval(timerInterval);
+      timeouts.forEach(clearTimeout);
+    };
+  };
+
   useEffect(() => {
-    if (promptInputRef.current) {
+    const cleanup = startBuildAnimation();
+    return cleanup;
+  }, []);
+
+  useEffect(() => {
+    if (isBuildComplete && promptInputRef.current) {
       promptInputRef.current.focus();
     }
-  }, [step, clarifyingQuestion, messages.length]);
+  }, [isBuildComplete]);
+
+  useEffect(() => {
+    if (promptInputRef.current && isBuildComplete) {
+      promptInputRef.current.focus();
+    }
+  }, [step, clarifyingQuestion, messages.length, isBuildComplete]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -324,6 +404,7 @@ export default function Home() {
     setStatusText("Ready");
     setErrorMsg(null);
     setMessages([]);
+    startBuildAnimation();
   };
 
   return (
@@ -352,9 +433,93 @@ export default function Home() {
         disabled={isProcessing}
       />
 
-      {/* Start Interface Header */}
+      {/* Eduardo Alba Build Animation on initial load */}
       {step === 1 && messages.length === 0 && (
-        <div className="claude-onboarding">
+        <div className="eduardo-build-container">
+          <div className="eduardo-build-header">
+            <button
+              type="button"
+              className="eduardo-build-toggle"
+              onClick={() => setBuildExpanded((prev) => !prev)}
+              aria-label="Toggle build details"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`eduardo-chevron ${buildExpanded ? "" : "collapsed"}`}
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+              <span>
+                {isBuildComplete
+                  ? `Built in ${Math.round(buildElapsed || 2)}s`
+                  : `Building in ${buildElapsed.toFixed(1)}s`}
+              </span>
+            </button>
+            <button
+              type="button"
+              className="eduardo-replay-btn"
+              onClick={startBuildAnimation}
+            >
+              REPLAY
+            </button>
+          </div>
+
+          {buildExpanded && (
+            <div className="eduardo-build-list">
+              <div className="eduardo-build-line" />
+              {BUILD_STEPS.map((s, idx) => {
+                const isDone = buildStep > idx;
+                const isActive = buildStep === idx && !isBuildComplete;
+                return (
+                  <div key={s.id} className="eduardo-build-item">
+                    <div
+                      className={`eduardo-build-dot ${
+                        isActive ? "active" : isDone ? "done" : ""
+                      }`}
+                    />
+                    <span
+                      className={`eduardo-build-label ${
+                        isActive ? "active" : isDone ? "done" : "pending"
+                      }`}
+                    >
+                      {s.label}
+                    </span>
+                    {s.badges && (isDone || isActive) && (
+                      <div className="eduardo-badges-row">
+                        {s.badges.map((b) => (
+                          <span key={b.id} className="eduardo-badge">
+                            <span
+                              className="live-dot"
+                              style={{ backgroundColor: b.dotColor }}
+                            />
+                            <span style={{ fontSize: 13 }}>{b.flag}</span>
+                            <span>{b.name}</span>
+                            {b.tag && <span className="badge-tag">{b.tag}</span>}
+                          </span>
+                        ))}
+                        {s.moreText && (
+                          <span className="eduardo-more-text">{s.moreText}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Start Interface Header (Revealed once build finishes) */}
+      {step === 1 && messages.length === 0 && isBuildComplete && (
+        <div className="claude-onboarding eduardo-content-reveal">
           <div className="claude-hero-title-row">
             <h1 className="claude-hero-title">Let&apos;s fit your CV</h1>
           </div>
@@ -504,9 +669,15 @@ export default function Home() {
         </div>
       )}
 
-      {/* Chatbox: inline below hero at start, fixed at bottom once message is sent */}
-      {step !== 3 && (
-        <div className={messages.length > 0 ? "chatbox-fixed-bottom" : "prompt-bar-container"}>
+      {/* Chatbox: inline below hero at start (only when build completes), fixed at bottom once message is sent */}
+      {step !== 3 && (messages.length > 0 || isBuildComplete) && (
+        <div
+          className={
+            messages.length > 0
+              ? "chatbox-fixed-bottom"
+              : "prompt-bar-container eduardo-content-reveal"
+          }
+        >
           <div className={messages.length > 0 ? "chatbox-fixed-inner" : ""}>
             <form
               onSubmit={handleChatboxSubmit}

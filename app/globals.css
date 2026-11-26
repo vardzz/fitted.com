@@ -74,10 +74,187 @@ input, textarea {
   animation: page-in var(--t-slow) var(--ease-out);
 }
 
-.container-centered .claude-onboarding {
+/* Eduardo Alba Build Animation */
+.eduardo-build-container {
   width: 100%;
+  max-width: 580px;
+  margin: 0 auto 28px;
+  animation: page-in var(--t-base) var(--ease-out);
+  text-align: left;
+}
+
+.eduardo-build-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.eduardo-build-toggle {
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  color: var(--color-fg-muted);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
   padding: 0;
-  flex: none;
+  transition: color var(--t-fast) var(--ease-out);
+}
+
+.eduardo-build-toggle:hover {
+  color: var(--color-fg);
+}
+
+.eduardo-chevron {
+  display: inline-block;
+  transition: transform var(--t-fast) var(--ease-out);
+}
+
+.eduardo-chevron.collapsed {
+  transform: rotate(-90deg);
+}
+
+.eduardo-replay-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: #a1a1aa;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: all var(--t-fast) var(--ease-out);
+}
+
+.eduardo-replay-btn:hover {
+  color: var(--color-fg);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.eduardo-build-list {
+  position: relative;
+  padding-left: 20px;
+}
+
+.eduardo-build-line {
+  position: absolute;
+  left: 4px;
+  top: 7px;
+  bottom: 8px;
+  width: 1.5px;
+  background-color: #e4e4e7;
+}
+
+.eduardo-build-item {
+  position: relative;
+  font-size: 13px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  animation: page-in 0.2s var(--ease-out);
+}
+
+.eduardo-build-item:last-child {
+  margin-bottom: 0;
+}
+
+.eduardo-build-dot {
+  position: absolute;
+  left: -20px;
+  top: 5px;
+  width: 9.5px;
+  height: 9.5px;
+  border-radius: 50%;
+  background-color: #d4d4d8;
+  transition: all var(--t-fast) var(--ease-out);
+}
+
+.eduardo-build-dot.done {
+  background-color: #27272a;
+}
+
+.eduardo-build-dot.active {
+  background-color: #f95721;
+  box-shadow: 0 0 0 3px rgba(249, 87, 33, 0.25);
+  animation: twinkle 1s ease-in-out infinite;
+}
+
+.eduardo-build-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #a1a1aa;
+  transition: color var(--t-fast) var(--ease-out);
+}
+
+.eduardo-build-label.active {
+  color: var(--color-fg);
+  font-weight: 500;
+}
+
+.eduardo-build-label.done {
+  color: #52525b;
+}
+
+.eduardo-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.eduardo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.eduardo-badge .live-dot {
+  width: 6.5px;
+  height: 6.5px;
+  border-radius: 50%;
+}
+
+.eduardo-badge .badge-tag {
+  color: #a1a1aa;
+  font-size: 11px;
+}
+
+.eduardo-more-text {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: #71717a;
+}
+
+.eduardo-content-reveal {
+  width: 100%;
+  animation: slide-up-reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes slide-up-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .container-centered .prompt-bar-container {
