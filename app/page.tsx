@@ -582,10 +582,6 @@ export default function Home() {
               </button>
             </form>
 
-            <div className="prompt-keyboard-hint">
-              Press ↵ to send
-            </div>
-
             {errorMsg && (
               <p className="error-text" style={{ textAlign: "center", marginTop: 12 }}>
                 {errorMsg}
