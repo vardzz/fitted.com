@@ -4,6 +4,7 @@ import Link from "next/link";
 export default function BannerSection() {
   return (
     <section className="landing-banner">
+      <div className="landing-banner-stripes" />
       <span className="landing-banner-tag">Get Fitted</span>
       <h2 className="landing-banner-title">
         Ready to tailor your CV in seconds?

@@ -2046,7 +2046,7 @@ input, textarea {
   max-width: 820px;
   width: 100%;
   margin: 80px auto 0 auto;
-  padding: 50px 32px;
+  padding: 48px 32px;
   background-color: #0a0a0a;
   color: #ffffff;
   border: 1px solid #1f1f1f;
@@ -2057,6 +2057,24 @@ input, textarea {
   align-items: center;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   transition: all 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-banner-stripes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #ffffff,
+    #ffffff 2px,
+    transparent 2px,
+    transparent 8px
+  );
+  opacity: 0.25;
 }
 
 .landing-banner-tag {
