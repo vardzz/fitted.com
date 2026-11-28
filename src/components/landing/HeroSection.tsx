@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import FloatingVisuals from "./FloatingVisuals";
 
 export default function HeroSection() {
@@ -22,22 +23,22 @@ export default function HeroSection() {
       <FloatingVisuals />
 
       <div className="landing-hero-inner">
-        {/* Editorial Serif Headline with Italic "fit" */}
+        {/* Simple Clean Sans-Serif Headline per design.md */}
         <h1 className="landing-hero-title">
-          Your CV, cut to <em>fit</em> the role.
+          Your CV, cut to fit the role.
         </h1>
 
-        {/* Reference Inspo Subtitle */}
+        {/* Clean Subtitle without emdash */}
         <p className="landing-hero-desc">
           Upload your CV, choose your target role, and get a tailored, one-page
-          resume that highlights what matters — no fluff, no fiction.
+          resume that highlights what matters. No fluff, no fiction.
         </p>
 
         {/* Action Buttons */}
         <div className="landing-hero-actions">
           <Link href="/app" className="landing-btn-primary">
             <span>Try Fitted for Free</span>
-            <span className="landing-btn-arrow" aria-hidden="true">→</span>
+            <ArrowRight size={15} strokeWidth={2} className="landing-btn-arrow" aria-hidden="true" />
           </Link>
           <a href="#problem" className="landing-btn-secondary">
             Learn More
