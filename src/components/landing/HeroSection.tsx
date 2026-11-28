@@ -22,20 +22,6 @@ export default function HeroSection() {
       <FloatingVisuals />
 
       <div className="landing-hero-inner">
-        {/* Minimalist Pill Badge */}
-        <div className="landing-hero-badge">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="#0a0a0a"
-            aria-hidden="true"
-          >
-            <path d="M12 0 C12 6.627 6.627 12 0 12 C6.627 12 12 17.373 12 24 C12 17.373 17.373 12 24 12 C17.373 12 12 6.627 12 0 Z" />
-          </svg>
-          <span>Tailor your CV for any role</span>
-        </div>
-
         {/* Editorial Serif Headline with Italic "fit" */}
         <h1 className="landing-hero-title">
           Your CV, cut to <em>fit</em> the role.
