@@ -14,7 +14,7 @@ export function checkForbiddenStrings(srcDir: string = process.cwd()): { clean: 
   const forbiddenStrings: string[] = JSON.parse(fs.readFileSync(forbiddenFile, "utf-8"));
   const violations: string[] = [];
 
-  const targetDirs = ["lib", "app", "components", "tests"];
+  const targetDirs = ["src", "tests", "lib", "app", "components"];
 
   function scanDir(dir: string) {
     if (!fs.existsSync(dir)) return;

@@ -1,12 +1,12 @@
 import * as fs from "fs";
 import * as path from "path";
-import { normalizeText } from "../lib/normalize";
-import { splitSections } from "../lib/sections";
-import { parseProfile } from "../lib/parse-profile";
-import { extractTargetKeywords } from "../lib/target";
-import { scoreProfile } from "../lib/score";
-import { selectWithinBudget } from "../lib/select";
-import { RE } from "../lib/regex";
+import { normalizeText } from "../src/lib/normalize";
+import { splitSections } from "../src/lib/sections";
+import { parseProfile } from "../src/lib/parse-profile";
+import { extractTargetKeywords } from "../src/lib/target";
+import { scoreProfile } from "../src/lib/score";
+import { selectWithinBudget } from "../src/lib/select";
+import { RE } from "../src/lib/regex";
 
 function runTest() {
   console.log("=== RUNNING P0 REGRESSION TESTS (F1, F2, F3, F4, F13) ===");

@@ -2,15 +2,15 @@ import fs from "fs";
 import path from "path";
 import React from "react";
 import { pdf } from "@react-pdf/renderer";
-import ResumePdf from "../components/ResumePdf";
-import { normalizeText } from "../lib/normalize";
-import { splitSections } from "../lib/sections";
-import { parseProfile } from "../lib/parse-profile";
-import { extractTargetKeywords } from "../lib/target";
-import { scoreProfile } from "../lib/score";
-import { selectWithinBudget } from "../lib/select";
-import { computeGaps } from "../lib/gaps";
-import { matchRolePreset } from "../lib/roles";
+import ResumePdf from "../src/components/ResumePdf";
+import { normalizeText } from "../src/lib/normalize";
+import { splitSections } from "../src/lib/sections";
+import { parseProfile } from "../src/lib/parse-profile";
+import { extractTargetKeywords } from "../src/lib/target";
+import { scoreProfile } from "../src/lib/score";
+import { selectWithinBudget } from "../src/lib/select";
+import { computeGaps } from "../src/lib/gaps";
+import { matchRolePreset } from "../src/lib/roles";
 
 export interface TestCaseSpec {
   id: string;
