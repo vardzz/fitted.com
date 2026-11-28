@@ -1,0 +1,29 @@
+Alex R. Rivera
+alex.rivera@example.com | +63 917 555 1234 | linkedin.com/in/alexrivera | github.com/alexrivera | alexrivera.dev
+Technical Skills
+• Languages: JavaScript, TypeScript, Python, SQL, HTML, CSS
+• Frameworks & Libraries: React, Next.js, Tailwind CSS, Node.js, Express, Redux
+• Tools & Cloud: Git, GitHub, Docker, AWS, PostgreSQL, MongoDB, Postman
+Experience
+Full Stack Engineer | Acro Corp Jan 2024 - Present
+• Architected and deployed 10+ high-traffic web applications using Next.js, TypeScript, and PostgreSQL.
+• Reduced API response latency by 35% through query optimization and Redis caching layer implementation.
+• Spearheaded migration of monolithic backend services into microservices hosted on AWS ECS and Docker.
+Frontend Developer Intern | WebFlow Solutions June 2023 - Dec 2023
+• Built responsive, accessible UI component libraries using React, Tailwind CSS, and TypeScript.
+• Improved Lighthouse performance score from 68 to 96 across 15 core client landing pages.
+• Collaborated with UX designers in Figma to implement pixel-perfect user journeys and state management.
+Projects
+DevPulse | Creator & Lead Engineer | Next.js, TypeScript, Tailwind CSS, Supabase 2024
+• Engineered open-source developer metrics platform aggregating GitHub events with 1,200+ monthly active users.
+• Designed relational database schemas in PostgreSQL with Row-Level Security policies.
+CloudMetrics | Full-Stack Developer | Python, FastAPI, Docker, AWS 2023
+• Built distributed telemetry visualization dashboard tracking cloud container resource utilization in real time.
+• Automated alert pipelines reducing incident notification delays by 50%.
+Education
+Pamantasan ng Lungsod 2020 - 2024
+Bachelor of Science in Computer Science GWA: 1.35 (Magna Cum Laude)
+Relevant Coursework: Data Structures & Algorithms, Software Engineering, Database Systems, Cloud Computing.
+Certifications
+• AWS Certified Developer Associate | Amazon Web Services 2024 - 2027
+• Professional Web Developer | FreeCodeCamp 2023

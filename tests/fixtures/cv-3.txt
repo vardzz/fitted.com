@@ -1,0 +1,27 @@
+Morgan K. Cruz
+morgan.cruz@example.com | 09151234567 | github.com/morgancruz | morgancruz.dev
+Technical Skills
+• Languages: TypeScript, JavaScript, Java, SQL, HTML/CSS
+• Technologies: React, Next.js, Docker, PostgreSQL, Tailwind CSS
+Experience
+Software Engineer
+Apex Systems
+Aug 2023 - Present
+• Designed modular frontend components and backend REST APIs serving over 50,000 daily requests.
+• Automated CI/CD deployment pipelines using GitHub Actions and Docker, cutting deployment cycles by 30%.
+Junior Web Developer
+CodeCraft Studios
+Feb 2022 - July 2023
+• Maintained client-facing web portals built with React and Node.js with 99.8% uptime.
+• Collaborated closely with QA engineers to resolve defects and improve end-to-end test coverage.
+Projects
+TaskGrid | Lead Engineer | React, TypeScript, Node.js
+2023
+• Engineered collaborative project kanban board featuring real-time socket updates and optimistic UI rendering.
+Education
+Polytechnic University
+2018 - 2022
+Bachelor of Science in Information Technology
+Relevant Coursework: Web Development, Database Management, Network Administration.
+Certifications
+• Certified Javascript Developer | OpenJS Foundation 2023

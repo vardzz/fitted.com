@@ -1,0 +1,26 @@
+Jordan T. Santos
+jordan.santos@example.com | +63 928 555 4321 | linkedin.com/in/jordansantos | github.com/jordansantos
+Skills
+• Data & Analytics: SQL, Python, Pandas, NumPy, Power BI, Tableau, Excel
+• Databases & Cloud: PostgreSQL, MySQL, Google Cloud Platform, BigQuery
+• Tools: Git, GitHub, Jupyter Notebook, Docker
+Experience
+Data Analyst | Insights Asia Corp July 2023 - Present
+• Built automated data visualization pipelines in Python and SQL delivering weekly growth reports with 99% accuracy.
+• Aggregated and analyzed transactional datasets across 500,000+ consumer records to uncover retention trends.
+• Designed executive interactive dashboards in Power BI and Tableau enabling real-time business decision making.
+Business Intelligence Analyst Intern | MetricLab Inc Jan 2023 - June 2023
+• Extracted and cleaned multi-source telemetry data using PostgreSQL and Pandas for operational reporting.
+• Reduced reporting turnaround cycle by 40% through automated Python scripts and scheduled queries.
+Projects
+FinTrack Analytics | Lead Developer | Python, Streamlit, PostgreSQL 2024
+• Built interactive financial portfolio monitoring application visualizing stock indicators and portfolio metrics.
+Customer Churn Predictor | Data Scientist | Python, Scikit-Learn, Pandas 2023
+• Trained predictive machine learning models achieving 88% precision in identifying customer churn patterns.
+Education
+State University 2019 - 2023
+Bachelor of Science in Statistics GPA: 3.8 / 4.0
+Relevant Coursework: Probability, Statistical Modeling, Database Systems, Regression Analysis.
+Certifications
+• Data Analyst Associate | DataCamp 2023 - 2025
+• Google Data Analytics Professional Certificate | Coursera 2023
