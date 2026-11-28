@@ -10,7 +10,7 @@ export default function Navbar() {
           <Image
             src="/fitted-name.png"
             alt="Fitted"
-            width={120}
+            width={125}
             height={38}
             priority
           />
