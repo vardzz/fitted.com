@@ -23,9 +23,9 @@ export default function HeroSection() {
       <FloatingVisuals />
 
       <div className="landing-hero-inner">
-        {/* Simple Clean Sans-Serif Headline per design.md */}
+        {/* Editorial Serif Headline with Italic "fit" */}
         <h1 className="landing-hero-title">
-          Your CV, cut to fit the role.
+          Your CV, cut to <em>fit</em> the role.
         </h1>
 
         {/* Clean Subtitle without emdash */}
