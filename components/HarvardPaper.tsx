@@ -2,6 +2,7 @@
 
 import React from "react";
 import { TailoredResume } from "../lib/types";
+import { stripBulletPrefix } from "../lib/regex";
 
 function normalizeDateHyphen(dateStr?: string): string {
   if (!dateStr) return "";
@@ -64,7 +65,7 @@ export default function HarvardPaper({
               <span className="harvard-bullet-dot">•</span>
               <span className="harvard-bullet-text">
                 <strong>
-                  {skillGroup.category.replace(/^[\s•*-–—◦▪▫‣⁃➢·\u2022\u25CF\u25A0\u25E6\u25AA\u2043\u2219\u2013\u2014\uF000-\uF8FF\u00A7\u00B7\u2218\uFEFF]+/, "").trim()}:{" "}
+                  {stripBulletPrefix(skillGroup.category)}:{" "}
                 </strong>
                 <span>{skillGroup.items?.map((i) => i.text).join(", ")}</span>
               </span>

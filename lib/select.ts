@@ -1,6 +1,7 @@
 import { Profile, TailorResult } from "./types";
 import { ScoredProfile } from "./score";
 import { getLexiconEntry } from "./lexicon";
+import { stripBulletPrefix } from "./regex";
 
 const BUDGET_MAX_LINES = 54;
 
@@ -107,7 +108,7 @@ export function selectWithinBudget(
 
     selectedSkills.push({
       id: cat.id,
-      category: cat.category.replace(/^[\s•*-–—◦▪▫‣⁃➢·\u2022\u25CF\u25A0\u25E6\u25AA\u2043\u2219\u2013\u2014\uF000-\uF8FF\u00A7\u00B7\u2218\uFEFF]+/, "").trim(),
+      category: stripBulletPrefix(cat.category),
       items: chosenItems.map((item) => ({
         id: item.id,
         text: formatSkillItem(item.text),
@@ -257,6 +258,14 @@ export function selectWithinBudget(
     date: c.cert.date,
   }));
 
+  // Keep only tertiary (college/university) education per user requirement
+  const collegeOnlyEducation = (education || []).filter(
+    (edu) =>
+      !/\b(?:high\s+school|elementary|primary|junior\s+high|senior\s+high|grade\s+school|middle\s+school|stem\s+strand|k-12|secondary)\b/i.test(
+        edu.school
+      )
+  );
+
   // 5. Line Budget Calculation
   let totalLines = 2; // Name & contact
   if (selectedSkills.length > 0) totalLines += 1.5 + selectedSkills.length;
@@ -278,8 +287,8 @@ export function selectWithinBudget(
       }
     }
   }
-  if (education.length > 0) {
-    totalLines += 1.5 + education.length * 2.5;
+  if (collegeOnlyEducation.length > 0) {
+    totalLines += 1.5 + collegeOnlyEducation.length * 2.5;
   }
   if (selectedCerts.length > 0) {
     totalLines += 1.5 + selectedCerts.length;
@@ -309,7 +318,7 @@ export function selectWithinBudget(
       skills: selectedSkills,
       experience: selectedExpEntries,
       projects: selectedProjects,
-      education,
+      education: collegeOnlyEducation,
       certifications: selectedCerts,
     },
     dropped,

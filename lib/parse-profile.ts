@@ -1,4 +1,4 @@
-import { RE } from "./regex";
+import { RE, stripBulletPrefix } from "./regex";
 import { Profile } from "./types";
 import { SectionBlocks } from "./sections";
 import { protectTokens } from "./token-protection";
@@ -497,7 +497,7 @@ function parseSkills(lines: string[]): Profile["skills"] {
     if (trimmed.includes(":") || (trimmed.includes("|") && trimmed.length < 120)) {
       const sep = trimmed.includes(":") ? ":" : "|";
       const [catName, itemsStr] = trimmed.split(sep, 2);
-      const cleanCatName = catName.replace(/^[\s•*-–—◦▪▫‣⁃➢·\u2022\u25CF\u25A0\u25E6\u25AA\u2043\u2219\u2013\u2014\uF000-\uF8FF\u00A7\u00B7\u2218\uFEFF]+/, "").trim();
+      const cleanCatName = stripBulletPrefix(catName);
       const rawItems = (itemsStr || "")
         .split(/[,•|]/)
         .map((s) => s.trim())

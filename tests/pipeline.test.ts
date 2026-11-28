@@ -7,7 +7,7 @@ import { extractTargetKeywords } from "../lib/target";
 import { scoreProfile } from "../lib/score";
 import { selectWithinBudget } from "../lib/select";
 import { computeGaps } from "../lib/gaps";
-import { RE } from "../lib/regex";
+import { RE, stripBulletPrefix } from "../lib/regex";
 import { getCanonicalSkill } from "../lib/lexicon";
 import { matchRolePreset } from "../lib/roles";
 import React from "react";
@@ -87,9 +87,12 @@ async function runTests() {
   const g2 = "GPA: 3.8 / 4.0".match(RE.gpa);
   assert(g2 !== null && g2[1] === "3.8", "GPA: 3.8 / 4.0 extraction");
 
-  // Bullets
+  // Bullets & Category Stripping
   assert(RE.bullet.test("• Leading bullet"), "Bullet: bullet symbol '•'");
   assert(RE.bullet.test("1. Numbered item"), "Bullet: numbered item");
+  assert(stripBulletPrefix("• Languages") === "Languages", "Category prefix: '• Languages' -> 'Languages'");
+  assert(stripBulletPrefix("• Tools & Infrastructure") === "Tools & Infrastructure", "Category prefix: '• Tools & Infrastructure' intact");
+  assert(stripBulletPrefix("• Frameworks & Libraries") === "Frameworks & Libraries", "Category prefix: '• Frameworks & Libraries' intact");
 
   // --- 2. FUZZY ROLE MATCHING (F5) ---
   console.log("\n--- 2. Testing Fuzzy Role Matching (F5) ---");

@@ -16,7 +16,8 @@ export const RE = {
     `(?:[\\s|–—−-]|^)(${DATE}\\s*(?:[–—−-]|\\s+to\\s+)\\s*(?:${DATE}|Present|Current|Now|Ongoing)|${DATE})\\s*$`,
     "i"
   ),
-  bullet: /^\s*(?:[•*-–—◦▪▫‣⁃➢·\u2022\u25E6\u25AA\u2043\u2219\u2013\u2014]|\d+[.)])\s+/,
+  bullet:
+    /^\s*(?:[•*—◦▪▫‣⁃➢·\u2022\u25CF\u25A0\u25E6\u25AA\u2043\u2219\u2013\u2014\uF000-\uF8FF\u00A7\u00B7\u2218\uFEFF\-]|–|\d+[.)])\s+/,
   gpa: /\b(?:GWA|GPA|CGPA)\s*[:\-]?\s*(\d(?:\.\d{1,3})?)(?:\s*\/\s*\d(?:\.\d+)?)?/i,
   degree:
     /\b(?:Bachelor|B\.?S\.?|B\.?A\.?|BSc|Master|M\.?S\.?|MBA|Ph\.?D|Diploma|Associate|Grado|Licenciatura)\b/i,
@@ -25,3 +26,15 @@ export const RE = {
   credentialId: /\(?\s*Credential ID:?\s*([A-Za-z0-9-]+)\s*\)?/i,
   metric: /\d+(?:[.,]\d+)?\s?(?:%|[kKmM]\b|x\b|\+)|[₱$€£]\s?\d[\d,.]*|\b\d{2,}\b/,
 };
+
+/**
+ * Safely strips any leading bullet symbol, dash or private-use icon glyph without
+ * corrupting letters A-Z (Fixes Skills category truncation)
+ */
+export function stripBulletPrefix(str?: string): string {
+  if (!str) return "";
+  return str
+    .replace(/^[\s•*—◦▪▫‣⁃➢·\u2022\u25CF\u25A0\u25E6\u25AA\u2043\u2219\u2013\u2014\uF000-\uF8FF\u00A7\u00B7\u2218\uFEFF\-]+/, "")
+    .replace(/^–\s*/, "")
+    .trim();
+}
