@@ -1,0 +1,17 @@
+René Peña
+rene.pena@example.es | +34 91 123 4567 | linkedin.com/in/renepena
+Technical Skills
+• Languages & Web: JavaScript, TypeScript, HTML, CSS, PHP
+• Frameworks: Vue.js, Nuxt, Tailwind CSS
+• Tools: Git, Docker, Postman
+Experience
+Frontend Web Developer | Soluciones Digitales 01/2022 - 08/2024
+• Implemented 20+ responsive web portals using Vue.js and Tailwind CSS.
+• Enhanced lighthouse performance score by 35
+• Collaborated with backend engineers to integrate REST APIs and state stores.
+Education
+Universidad Complutense 2018 - Expected 2026
+Grado en Ingeniería Informática CGPA: 3.92 / 4.0
+Relevant Coursework: Web Engineering, Distributed Systems, Algorithms.
+Certifications
+• Certified Vue Developer | VueJS Certification Program 2023 - 2025

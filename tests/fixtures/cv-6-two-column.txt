@@ -1,0 +1,11 @@
+David Kim
+david.kim@example.net | +82 10 1234 5678 | github.com/davidkim
+About Me
+Software developer with focus on mobile and fullstack engineering.
+Left Column Skills Right Column Experience
+Flutter, Dart, React Native Mobile Engineer at MobileTech
+Firebase, SQLite, REST APIs Jan 2023 - Present
+Git, Postman, Figma Built 4 consumer apps
+Education Projects
+Seoul National University HabitTracker app in Flutter
+B.S. Computer Science 2019-2023 E-Commerce store in React

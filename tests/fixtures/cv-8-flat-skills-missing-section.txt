@@ -1,0 +1,23 @@
+Elena Rostova
+elena.rostova@example.com | +44 20 7946 0123 | github.com/erostova | erostova.io
+Skills
+JavaScript, TypeScript, React, Next.js, Node.js, Python, PostgreSQL, Docker, Git, Tailwind CSS, Jest, Cypress
+Experience
+Senior Frontend Engineer | FinTech Innovations Nov 2021 - Present
+• Spearheaded architecture of customer banking web portal supporting 200,000 active daily users across Europe.
+• Mentored 6 junior and mid-level developers in modern React patterns, testing standards, and design system creation.
+• Reduced client-side JavaScript bundle size by 42% through code-splitting, tree-shaking, and lazy loading strategies.
+• Engineered accessible design system components compliant with WCAG 2.1 AA accessibility guidelines.
+Frontend Developer | RetailEdge Ltd March 2019 - Oct 2021
+• Developed customer checkout flow increasing mobile conversion rates by 18% within three months of deployment.
+• Automated cross-browser end-to-end testing with Cypress reducing regression bug discovery time by 50%.
+• Integrated Stripe and PayPal payment gateways with comprehensive error handling and analytics tracking.
+Junior Web Developer | WebCraft Agency June 2017 - Feb 2019
+• Built responsive landing pages and content management themes for 30+ regional e-commerce clients.
+• Optimized web asset delivery and image compression improving page speed indices across mobile networks.
+Education
+University of Edinburgh 2013 - 2017
+Bachelor of Science in Computer Science First Class Honours
+Certifications
+• Professional Scrum Master I | Scrum.org 2021
+• AWS Certified Cloud Practitioner | Amazon Web Services 2022 - 2025

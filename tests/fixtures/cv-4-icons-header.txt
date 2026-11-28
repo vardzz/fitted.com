@@ -1,0 +1,35 @@
+Lucas M. Vance
+§ lucasvance | ï lvance | vance.dev | # lucas.vance@example.com | H +63 918 123 4567
+Technical Skills
+• Languages: JavaScript, TypeScript, Python, HTML/CSS, SQL
+• Frameworks: React, Next.js, Tailwind CSS, Framer Motion
+• Tools: Git, GitHub, Docker, Postman
+• Specialties: SEO Optimization, Prompt Engineering
+Experience
+Frontend AI Engineer Intern | NovaTech AI June 2026 – October 2026
+• Architected and deployed 15+ responsive user interfaces using Next.js and TypeScript.
+• Reduced component refactoring turnaround cycles by 30
+• Improved core page load latency by 25
+• Integrated complex REST API endpoints and optimized state management.
+Community Data Analyst | Laguna Tech Hub July 2026 - Present
+• Built data visualization pipelines in Python and SQL with 98% accuracy.
+• Analyzed attendance datasets across 3 major tech cycles serving 500+ active members.
+IT Intern | Global Solutions Corp Aug 2026 - Present
+• Managed social media web content and applied targeted SEO strategies.
+• Leveraged generative AI suites to produce multimedia assets and calendars.
+Projects
+CanvasGrid | Creator & Frontend Lead | Next.js, TypeScript, Tailwind CSS 2026
+• Designed interactive canvas web application to extract class schedules from PDF documents.
+• Received positive community feedback and 12 upvotes on developer forums.
+SafetyNet AI | Technical Lead & Fullstack Engineer | Python, Gemini API, Supabase May 2026
+• Led a 4-member team to build automated brand monitoring system during Hackathon 2026.
+• Engineered scraping pipeline cutting turnaround time by 60
+PortalApp | Frontend Lead | Next.js, Framer Motion Feb 2026 - Present
+• Developed intuitive orchestration dashboard and monitoring interfaces for multi-agent system.
+Education
+Pamantasan ng Lungsod 2023 – Expected 2027
+Bachelor of Science in Computer Science GWA: 1.479 (Dean's Lister)
+Relevant Coursework: Data Structures & Algorithms, Software Engineering, Database Systems.
+Certifications
+• AI Developer Associate | TechCert (Credential ID: AIEDA0019019720935) 2026 – 2028
+• Data Analyst Associate | CloudAcademy (Credential ID: DAA0015766640456) 2026 – 2028

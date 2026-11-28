@@ -1,0 +1,25 @@
+Sarah Chen
+sarah.chen@example.org | +1-555-890-1234 | linkedin.com/in/sarahchen | github.com/sarahchen
+Technical Proficiencies
+Languages: Python, Go, Java, SQL, Rust
+Databases & Cloud: PostgreSQL, AWS, Docker, Kubernetes, Redis
+Work History
+Backend Systems Engineer | CloudScale Inc
+January 2023 to Present
+Architected distributed microservices handling 25,000 requests per second.
+Reduced database query bottlenecks by 45% through Redis caching and index restructuring.
+Automated container deployment pipelines using Kubernetes and Docker.
+Junior Software Developer | DataFlow Labs
+March 2021 to December 2022
+Built internal RESTful APIs in Python and FastAPI for telemetry ingestion.
+Maintained automated integration test suites achieving 94% test coverage.
+Selected Projects
+StreamRelay | Lead Engineer | Go, Docker, Redis
+2023
+Engineered high-throughput event streaming broker processing 100k events per minute.
+Academic Background
+Metro State University 2017 to 2021
+Bachelor of Science in Software Engineering GPA: 3.85 / 4.0
+Licenses & Certifications
+AWS Certified Solutions Architect | Amazon Web Services 2023 - 2026
+Certified Kubernetes Administrator | Cloud Native Computing Foundation 2022
