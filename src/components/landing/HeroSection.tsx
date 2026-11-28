@@ -49,23 +49,6 @@ export default function HeroSection() {
           </a>
         </div>
       </div>
-
-      <a href="#problem" className="landing-scroll-indicator" aria-label="Scroll to Problem section">
-        <span>Explore</span>
-        <svg
-          width={13}
-          height={13}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 5v14" />
-          <path d="m19 12-7 7-7-7" />
-        </svg>
-      </a>
     </section>
   );
 }

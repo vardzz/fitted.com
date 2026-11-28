@@ -1779,16 +1779,15 @@ input, textarea {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   text-align: center;
-  padding: clamp(16px, 3vh, 48px) 0 20px 0;
+  padding: 32px 0;
   box-sizing: border-box;
 }
 
 .landing-hero-inner {
   max-width: 780px;
   width: 100%;
-  margin: auto 0;
   display: flex;
   flex-direction: column;
   align-items: center;
