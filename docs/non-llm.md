@@ -16,7 +16,7 @@ This file replaces the LLM parts of `build.md`. Everything else in `build.md`, `
 
 ## 2. Hard rules (replace `build.md` section 2, rules 1-3)
 
-1. **Copy, never compose.** Every string in the output resume is a verbatim (whitespace-normalized) string parsed from the CV. No generated sentences.
+1. **Copy, never compose.** Every string in the output resume is a verbatim (whitespace-normalized) string parsed from the CV. No generated sentences. (One narrow exception: skill spelling in the Skills section, see section 12a.)
 2. **Gaps are reported, not filled.** Required role keywords that the CV does not contain go in `gaps`.
 3. **Everything is deterministic.** The same CV and the same role always give the same resume. No randomness.
 4. **Show uncertainty.** If a section could not be parsed with confidence, show a warning and let the user fix it (section 9).
@@ -354,9 +354,9 @@ Find target terms inside each CV item using the same lexicon matcher, plus plain
 
 ### Line budget
 
-- Estimate lines per bullet: `ceil(chars / 105)` (about 105 characters per line at 9 to 9.5pt on A4 with the Harvard margins; tune against the real PDF).
+- Estimate lines per bullet: `ceil(chars / 105)` (about 105 characters per line at 10pt on A4 with 12-13mm margins; tune against the real PDF).
 - Fixed costs: name and contact 2 lines, each section heading 1.5, each entry header 1, education block about 3, skills 1 line per category (2 if long).
-- **Budget** about 58 to 62 lines on one A4 page; set the real number by checking the owner's own resume (it fits about 60 lines).
+- **Budget** about 52 to 56 lines on one A4 page at 10pt (the ATS font size, see `resume-style.md` section 0); set the real number by rendering the PDF and counting how many lines fit.
 
 ### Algorithm
 
@@ -372,7 +372,7 @@ Find target terms inside each CV item using the same lexicon matcher, plus plain
 5. **Output order:**
    - Experience: **reverse chronological** (Harvard convention), bullets inside each entry sorted by score descending.
    - Projects: by score descending.
-   - Skills: categories ordered by total match; inside a category, matched items first. Keep original wording.
+   - Skills: categories ordered by total match; inside a category, matched items first. Keep original wording except the optional canonical-spelling rule in section 12a.
    - Certifications: by score descending, then date.
    - Education: original order.
 6. Stop adding bullets to an entry beyond 3.
@@ -381,6 +381,36 @@ Find target terms inside each CV item using the same lexicon matcher, plus plain
 
 - `matched`: target terms found anywhere in the CV, ordered by weight. Show as chips in the result panel.
 - `gaps`: `requiredTerms` that never appear in the CV (including aliases). Phrase them as "Not shown in your CV: Docker". If a `related` term is present, add a hint ("You list Supabase; the role asks for PostgreSQL. Add it only if you have used it").
+
+## 12a. ATS-friendly output (applies to selection)
+
+The PDF must follow `resume-style.md` section 0 (font, 10pt minimum, plain text contact line, standard headings, no icons). The selection step has to respect its "not too much text" limits, because the font cannot shrink to make things fit.
+
+**Hard limits for the selected resume**
+
+- At most 3 bullets per experience entry, 2 per project.
+- At most 4 experience entries, 3 projects, 3 certifications, 4 skills lines (about 16 skill items).
+- About 450 to 600 words in total.
+
+**Bullet length (no rewriting allowed, so choose instead)**
+
+- Estimate each bullet's lines (`ceil(chars / 105)`). When two bullets score about the same (within 0.1), prefer the shorter one.
+- Bullets over 2 lines (about 220 characters) lose `0.15` of their score. Skip a bullet over 260 characters unless it is the only bullet of its entry.
+- When a long bullet is kept anyway, add a warning: "This bullet is long. Consider shortening it in your CV." Never cut the text yourself.
+
+**Canonical skill spelling (Skills section only, optional, on by default)**
+
+- If the CV lists an alias of a lexicon skill (for example `JS`, `postgres`, `nodejs`) and the role's target uses the canonical name, show the canonical spelling (`JavaScript`, `PostgreSQL`, `Node.js`) in the Skills section. The user still has the skill, so nothing is invented, and ATS keyword matching works better.
+- Do not apply this to bullets, project names or anything outside the Skills section.
+- The faithfulness test must accept this mapping (alias in the source, canonical in the output) and nothing else.
+
+**Where the keywords appear**
+
+- A matched skill should also appear in at least one kept bullet or project when the CV has one. When choosing between two similar bullets, prefer the one that contains matched keywords (the scoring already does this).
+
+**Output checks (tests)**
+
+- Run the PDF self-check from `resume-style.md` section 0 on every fixture: one page, standard headings in order, contact details as text, no icon or private-use characters, word count in range.
 
 ## 13. UI changes
 
@@ -394,6 +424,7 @@ Find target terms inside each CV item using the same lexicon matcher, plus plain
 - **Faithfulness test:** every bullet, role, org, school and skill in the result must be a substring of the normalized source text. This must always pass.
 - **Budget test:** result lines are at most the budget for every fixture and for 3 different roles.
 - **Stability test:** the same input twice gives identical output.
+- **ATS test:** extract the text of the generated PDF with `unpdf` and check the rules in `resume-style.md` section 0 (one page, headings in order, email and phone present as text, no icon characters, word count 450-600).
 - **Sanity checks by role:** for "Frontend Developer" the React and TypeScript bullets rank above the data bullets; for "Data Analyst" the order flips.
 - **Regex unit tests:** table-driven tests for email, phone, dates (`Aug 2025 - Present`, `08/2025 - 12/2025`, `2023 - 2024`), GPA and bullets.
 
