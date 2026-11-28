@@ -1773,6 +1773,8 @@ input, textarea {
 
 /* Hero Section - Full Viewport First Fold */
 .landing-hero {
+  position: relative;
+  overflow: hidden;
   min-height: calc(100vh - 78px);
   min-height: calc(100dvh - 78px);
   width: 100%;
@@ -1786,11 +1788,254 @@ input, textarea {
 }
 
 .landing-hero-inner {
+  position: relative;
+  z-index: 2;
   max-width: 780px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+/* =========================================================================
+   HERO FLOATING 3D RESUME & ORBIT VISUALS
+   ========================================================================= */
+
+.hero-visuals-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Orbit SVG Line */
+.hero-orbit-svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  max-width: 1300px;
+  height: 100%;
+  color: #0a0a0a;
+}
+
+/* Sparkle Stars */
+.hero-sparkle {
+  position: absolute;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.hero-sparkle-primary {
+  top: 26%;
+  right: 21%;
+  animation: sparkle-float 5s ease-in-out infinite alternate;
+}
+
+.hero-sparkle-secondary {
+  top: 52%;
+  left: 14%;
+  opacity: 0.65;
+  animation: sparkle-float 6.5s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes sparkle-float {
+  0% {
+    transform: translateY(0px) scale(0.92) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.08) rotate(6deg);
+  }
+  100% {
+    transform: translateY(0px) scale(0.92) rotate(0deg);
+  }
+}
+
+/* 3D Floating Resume Sheets */
+.hero-sheet {
+  position: absolute;
+  width: 260px;
+  height: 360px;
+  background-color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+  transform-style: preserve-3d;
+}
+
+/* Foreground Sheet (Right flank, crisp, tilted) */
+.hero-sheet-fg {
+  right: max(16px, calc(50% - 590px));
+  top: calc(50% - 175px);
+  z-index: 2;
+  box-shadow: 
+    0 24px 50px -10px rgba(0, 0, 0, 0.1),
+    0 10px 20px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 0, 0, 0.03);
+  transform: perspective(1200px) rotateX(16deg) rotateY(-22deg) rotateZ(12deg);
+  animation: sheet-float-fg 7s ease-in-out infinite;
+}
+
+@keyframes sheet-float-fg {
+  0%, 100% {
+    transform: perspective(1200px) rotateX(16deg) rotateY(-22deg) rotateZ(12deg) translateY(0);
+  }
+  50% {
+    transform: perspective(1200px) rotateX(14deg) rotateY(-20deg) rotateZ(11deg) translateY(-14px);
+  }
+}
+
+/* Background Sheet (Left flank, blurred depth of field) */
+.hero-sheet-bg {
+  left: max(10px, calc(50% - 610px));
+  top: calc(50% - 215px);
+  z-index: 1;
+  filter: blur(5px);
+  opacity: 0.42;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.07);
+  transform: perspective(1200px) rotateX(20deg) rotateY(18deg) rotateZ(-16deg);
+  animation: sheet-float-bg 9s ease-in-out infinite alternate;
+}
+
+@keyframes sheet-float-bg {
+  0% {
+    transform: perspective(1200px) rotateX(20deg) rotateY(18deg) rotateZ(-16deg) translateY(0);
+  }
+  100% {
+    transform: perspective(1200px) rotateX(22deg) rotateY(16deg) rotateZ(-15deg) translateY(-16px);
+  }
+}
+
+/* Resume Paper Sheet Contents */
+.hero-sheet-inner {
+  padding: 22px 20px;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  user-select: none;
+}
+
+.hero-sheet-header {
+  border-bottom: 1px solid #0a0a0a;
+  padding-bottom: 8px;
+  text-align: center;
+}
+
+.hero-sheet-name {
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: #0a0a0a;
+  letter-spacing: -0.01em;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.hero-sheet-contact-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.hero-sheet-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hero-sheet-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 0.5px solid #0a0a0a;
+  padding-bottom: 2px;
+}
+
+.hero-sheet-section-title {
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0a0a0a;
+}
+
+.hero-sheet-date {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 9px;
+  color: #71717a;
+}
+
+.hero-sheet-subline {
+  display: flex;
+  align-items: center;
+}
+
+.hero-sheet-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 2px;
+}
+
+.hero-sheet-bullet-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-bullet-dot {
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: 50%;
+  background-color: #0a0a0a;
+  flex-shrink: 0;
+}
+
+/* Skeleton Bars */
+.hero-skeleton-bar {
+  height: 4px;
+  background-color: #e5e5e5;
+  border-radius: 2px;
+}
+
+.bar-xs { width: 28px; }
+.bar-sm { width: 55px; }
+.bar-md { width: 75%; }
+.bar-lg { width: 88%; }
+.bar-full { width: 100%; }
+
+.hero-skeleton-dot {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background-color: #a1a1aa;
+}
+
+/* Responsive Hide / Graceful Scaling */
+@media (max-width: 1140px) {
+  .hero-sheet-bg {
+    display: none;
+  }
+  .hero-sheet-fg {
+    right: -30px;
+    opacity: 0.5;
+    transform: perspective(1000px) rotateX(12deg) rotateY(-16deg) rotateZ(8deg) scale(0.85);
+  }
+}
+
+@media (max-width: 820px) {
+  .hero-sheet-fg {
+    display: none;
+  }
+  .hero-sparkle-primary {
+    right: 8%;
+  }
 }
 
 .landing-hero-title {

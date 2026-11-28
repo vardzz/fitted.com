@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
+import FloatingVisuals from "./FloatingVisuals";
 
 export default function HeroSection() {
   useEffect(() => {
@@ -17,6 +18,9 @@ export default function HeroSection() {
 
   return (
     <section className="landing-hero stagger-2">
+      {/* 3D Floating Harvard Resume Sheets & Orbit Sparkles */}
+      <FloatingVisuals />
+
       <div className="landing-hero-inner">
         <h1 className="landing-hero-title">
           Your CV, cut to fit the role.
