@@ -101,7 +101,7 @@ export function selectWithinBudget(
       if (cut.score > 0) {
         dropped.push({
           text: `Skill: ${cut.text}`,
-          reason: `Omitted to respect 16-skill ATS density cap`,
+          reason: `Exceeds 16-skill ATS density cap`,
         });
       }
     }
@@ -125,7 +125,7 @@ export function selectWithinBudget(
   for (const d of droppedExp) {
     dropped.push({
       text: `${d.entry.role} at ${d.entry.org}`,
-      reason: `Omitted to preserve Harvard 1-page budget in favor of higher-match experiences (score: ${d.score.toFixed(2)})`,
+      reason: `Lower role match; omitted for 1-page budget`,
     });
   }
 
@@ -150,7 +150,7 @@ export function selectWithinBudget(
     for (const cb of cutBullets) {
       dropped.push({
         text: `${e.entry.org} - "${cb.text.slice(0, 45)}..."`,
-        reason: `Omitted lower-ranked bullet to strictly preserve 1-page density`,
+        reason: `Lower keyword alignment; omitted for 1-page density`,
       });
     }
 
@@ -207,7 +207,7 @@ export function selectWithinBudget(
   for (const dp of droppedProjects) {
     dropped.push({
       text: `Project: ${dp.project.name}`,
-      reason: `Omitted secondary project to fit 1-page Harvard layout (score: ${dp.score.toFixed(2)})`,
+      reason: `Lower role relevance; omitted for 1-page budget`,
     });
   }
 
@@ -224,7 +224,7 @@ export function selectWithinBudget(
     for (const cb of cut) {
       dropped.push({
         text: `${p.project.name} - "${cb.text.slice(0, 45)}..."`,
-        reason: `Omitted project bullet to preserve 1-page limit`,
+        reason: `Omitted for 1-page limit`,
       });
     }
 
@@ -247,7 +247,7 @@ export function selectWithinBudget(
   for (const dc of droppedCerts) {
     dropped.push({
       text: `Certification: ${dc.cert.name}`,
-      reason: `Omitted lower-priority certification to fit 1-page budget`,
+      reason: `Lower priority; omitted for 1-page budget`,
     });
   }
 

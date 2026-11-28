@@ -678,19 +678,20 @@ export default function Home() {
                     />
                   </div>
 
-                  {/* BOTTOM: Tailoring Insights Stack */}
+                  {/* BOTTOM: Tailoring Insights Stack (Pure Monochrome Black & White Palette) */}
                   <div className="ai-insights-stack">
-                    {/* Matched Role Keywords */}
-                    {(m.tailoredData || tailoredData)?.matched &&
-                    (m.tailoredData || tailoredData)!.matched!.length > 0 && (
-                      <div className="insight-card">
-                        <div className="insight-card-header">
-                          <h3 className="insight-card-title">Matched Role Keywords</h3>
-                          <p className="insight-card-subtitle">
-                            Competencies from the role and job requirements verified in your CV.
-                          </p>
-                        </div>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "8px" }}>
+                    {/* 1. What is included */}
+                    <div className="insight-card">
+                      <div className="insight-card-header">
+                        <h3 className="insight-card-title">What is included</h3>
+                        <p className="insight-card-subtitle">
+                          Key competencies, experiences, and education prioritized for this role.
+                        </p>
+                      </div>
+
+                      {(m.tailoredData || tailoredData)?.matched &&
+                      (m.tailoredData || tailoredData)!.matched!.length > 0 ? (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "4px" }}>
                           {(m.tailoredData || tailoredData)!.matched!.map((kw, idx) => (
                             <span
                               key={idx}
@@ -699,10 +700,11 @@ export default function Home() {
                                 alignItems: "center",
                                 fontSize: "12px",
                                 fontFamily: "var(--font-mono)",
-                                padding: "3px 8px",
+                                padding: "3px 9px",
                                 borderRadius: "999px",
-                                backgroundColor: "var(--color-accent-soft, #eaefff)",
-                                color: "var(--color-accent, #2f5bea)",
+                                backgroundColor: "#f4f4f5",
+                                color: "#18181b",
+                                border: "1px solid #e4e4e7",
                                 fontWeight: 500,
                               }}
                             >
@@ -710,36 +712,19 @@ export default function Home() {
                             </span>
                           ))}
                         </div>
-                      </div>
-                    )}
+                      ) : (
+                        <p className="insight-empty" style={{ color: "#71717a" }}>
+                          Profile tailored directly from verified CV entries.
+                        </p>
+                      )}
+                    </div>
 
-                    {/* Parsing Warnings (if any) */}
-                    {(m.tailoredData || tailoredData)?.warnings &&
-                    (m.tailoredData || tailoredData)!.warnings!.length > 0 && (
-                      <div className="insight-card" style={{ borderLeft: "3px solid #b45309" }}>
-                        <div className="insight-card-header">
-                          <h3 className="insight-card-title" style={{ color: "#b45309" }}>Parsing Notice</h3>
-                          <p className="insight-card-subtitle">
-                            The following layout notices were flagged during deterministic parsing:
-                          </p>
-                        </div>
-                        <ul className="insight-list">
-                          {(m.tailoredData || tailoredData)!.warnings!.map((warn, idx) => (
-                            <li key={idx} className="insight-item">
-                              <span className="insight-dot gap" style={{ backgroundColor: "#b45309" }} />
-                              <span style={{ fontSize: "13px" }}>{warn}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* What I cut and why */}
+                    {/* 2. What was cut and why */}
                     <div className="insight-card">
                       <div className="insight-card-header">
-                        <h3 className="insight-card-title">What I cut and why</h3>
+                        <h3 className="insight-card-title">What was cut and why</h3>
                         <p className="insight-card-subtitle">
-                          Condensed or omitted to ensure a single-page Harvard layout.
+                          Omitted to ensure a clean 1-page Harvard layout.
                         </p>
                       </div>
 
@@ -748,43 +733,22 @@ export default function Home() {
                         <ul className="insight-list">
                           {(m.tailoredData || tailoredData)!.dropped.map((cut, idx) => (
                             <li key={idx} className="insight-item">
-                              <span className="insight-dot cut" />
+                              <span
+                                className="insight-dot"
+                                style={{ backgroundColor: "#18181b" }}
+                              />
                               <div>
-                                <strong>{cut.item}:</strong>{" "}
-                                <span className="insight-reason">{cut.reason}</span>
+                                <strong style={{ color: "#000000" }}>{cut.item}:</strong>{" "}
+                                <span className="insight-reason" style={{ color: "#52525b" }}>
+                                  {cut.reason}
+                                </span>
                               </div>
                             </li>
                           ))}
                         </ul>
                       ) : (
-                        <p className="insight-empty">
+                        <p className="insight-empty" style={{ color: "#71717a" }}>
                           All profile items were fitted into the one-page resume.
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Not shown in your CV (Gaps) */}
-                    <div className="insight-card">
-                      <div className="insight-card-header">
-                        <h3 className="insight-card-title">Not shown in your CV</h3>
-                        <p className="insight-card-subtitle">
-                          Role requirements not found in your CV. We never fabricate facts.
-                        </p>
-                      </div>
-
-                      {(m.tailoredData || tailoredData)?.gaps &&
-                      (m.tailoredData || tailoredData)!.gaps.length > 0 ? (
-                        <ul className="insight-list">
-                          {(m.tailoredData || tailoredData)!.gaps.map((gap, idx) => (
-                            <li key={idx} className="insight-item">
-                              <span className="insight-dot gap" />
-                              <span>{gap}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="insight-empty positive">
-                          No missing requirements identified for this role!
                         </p>
                       )}
                     </div>
