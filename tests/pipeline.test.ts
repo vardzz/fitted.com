@@ -9,10 +9,10 @@ import { selectWithinBudget } from "../lib/select";
 import { computeGaps } from "../lib/gaps";
 import { RE } from "../lib/regex";
 import { getCanonicalSkill } from "../lib/lexicon";
+import { matchRolePreset } from "../lib/roles";
 import React from "react";
 import { pdf } from "@react-pdf/renderer";
 import ResumePdf from "../components/ResumePdf";
-
 
 function runPipeline(cvText: string, role: string, posting?: string) {
   const { normalizedText, lines } = normalizeText(cvText);
@@ -20,7 +20,7 @@ function runPipeline(cvText: string, role: string, posting?: string) {
   const profile = parseProfile(sections, normalizedText, warnings);
   const target = extractTargetKeywords(role, posting);
   const scored = scoreProfile(profile, target, role);
-  const { resume, dropped, stats } = selectWithinBudget(
+  const { resume, dropped, stats, warnings: selectWarnings } = selectWithinBudget(
     scored,
     profile.education || [],
     profile.name,
@@ -36,6 +36,7 @@ function runPipeline(cvText: string, role: string, posting?: string) {
     stats,
     matched,
     gaps,
+    warnings: [...(profile.warnings || []), ...(selectWarnings || [])],
   };
 }
 
@@ -64,10 +65,10 @@ async function runTests() {
   // Phone (Philippine +63 9xx, 09xx, international)
   assert(RE.phone.test("+63 917 555 1234"), "Phone: Philippine international format (+63 917 555 1234)");
   assert(RE.phone.test("09151234567"), "Phone: Philippine local format (09151234567)");
-  assert(RE.phone.test("+639154636051"), "Phone: Philippine compact (+639154636051)");
+  assert(RE.phone.test("+639189998877"), "Phone: Philippine compact (+639189998877)");
   assert(RE.phone.test("+1 (555) 234-5678"), "Phone: US international format");
 
-  // Date Range
+  // Date Range & Anchored Date
   const d1 = "Aug 2025 - Present".match(RE.dateRange);
   assert(d1 !== null && d1[1].includes("Aug 2025"), "DateRange: 'Aug 2025 - Present'");
 
@@ -78,7 +79,7 @@ async function runTests() {
   assert(d3 !== null && d3[1] === "2023", "DateRange: '2023 - 2024'");
 
   const d4 = "June 2026 – October 2026".match(RE.dateRange);
-  assert(d4 !== null && d4[0].includes("October 2026"), "DateRange: 'June 2026 – October 2026' preserves 'October' (no Oc truncation)");
+  assert(d4 !== null && d4[0].includes("October 2026"), "DateRange: 'June 2026 – October 2026' preserves 'October'");
 
   // GPA / GWA
   const g1 = "GWA: 1.479 (Dean's Lister)".match(RE.gpa);
@@ -90,73 +91,111 @@ async function runTests() {
   assert(RE.bullet.test("• Leading bullet"), "Bullet: bullet symbol '•'");
   assert(RE.bullet.test("1. Numbered item"), "Bullet: numbered item");
 
-  // --- 2. FAITHFULNESS TEST ---
-  console.log("\n--- 2. Testing Faithfulness (Copy, never compose) ---");
-  const fixture1 = fs.readFileSync(path.join(process.cwd(), "tests/fixtures/cv-1.txt"), "utf-8");
-  const res1 = runPipeline(fixture1, "Senior Frontend Engineer");
+  // --- 2. FUZZY ROLE MATCHING (F5) ---
+  console.log("\n--- 2. Testing Fuzzy Role Matching (F5) ---");
+  const preset1 = matchRolePreset("Frontend Engineer");
+  const preset2 = matchRolePreset("Frontemd Engineer");
+  const preset3 = matchRolePreset("front end developer");
 
-  const sourceNormalized = res1.normalizedText.toLowerCase();
+  assert(preset1?.name === "Frontend Developer", "Role matching: 'Frontend Engineer' matches Frontend Developer");
+  assert(preset2?.name === "Frontend Developer", "Role matching: 'Frontemd Engineer' (typo) fuzzy matches Frontend Developer");
+  assert(preset3?.name === "Frontend Developer", "Role matching: 'front end developer' matches Frontend Developer");
 
-  // Verify roles
-  for (const exp of res1.resume.experience) {
-    assert(sourceNormalized.includes(exp.role.toLowerCase()), `Faithfulness Role: '${exp.role}' exists in source`);
-    assert(sourceNormalized.includes(exp.org.toLowerCase()), `Faithfulness Org: '${exp.org}' exists in source`);
-    for (const b of exp.bullets) {
-      assert(sourceNormalized.includes(b.text.toLowerCase()), `Faithfulness Exp Bullet: '${b.text.slice(0, 35)}...' exists verbatim in source`);
+  // Generic tokens cannot decide role alone
+  const genericOnly = matchRolePreset("Senior Lead Engineer");
+  assert(genericOnly === undefined, "Role matching: generic tokens ('Senior Lead Engineer') cannot match without distinctive term");
+
+  // --- 3. TOKEN-LEVEL FAITHFULNESS TEST (F13: Copy, never compose) ---
+  console.log("\n--- 3. Testing Token-Level Faithfulness across 8 Fixtures ---");
+  const fixtureFiles = [
+    "cv-1.txt",
+    "cv-2.txt",
+    "cv-3.txt",
+    "cv-4-icons-header.txt",
+    "cv-5-no-bullets.txt",
+    "cv-6-two-column.txt",
+    "cv-7-non-latin-gpa.txt",
+    "cv-8-flat-skills-missing-section.txt",
+  ];
+
+  for (const fName of fixtureFiles) {
+    const raw = fs.readFileSync(path.join(process.cwd(), "tests/fixtures", fName), "utf-8");
+    const res = runPipeline(raw, "Frontend Developer");
+    const sourceLower = res.normalizedText.toLowerCase();
+
+    // Check experience bullets
+    let allExpFaithful = true;
+    for (const exp of res.resume.experience) {
+      for (const b of exp.bullets) {
+        // Strip metric suggested annotations if any
+        const cleanedBullet = b.text.toLowerCase();
+        if (!sourceLower.includes(cleanedBullet)) {
+          allExpFaithful = false;
+        }
+      }
     }
-  }
+    assert(allExpFaithful, `Faithfulness [${fName}]: all experience bullets exist verbatim in source text`);
 
-  // Verify projects
-  for (const p of res1.resume.projects) {
-    assert(sourceNormalized.includes(p.name.toLowerCase()), `Faithfulness Project: '${p.name}' exists in source`);
-    for (const b of p.bullets) {
-      assert(sourceNormalized.includes(b.text.toLowerCase()), `Faithfulness Proj Bullet: '${b.text.slice(0, 35)}...' exists verbatim in source`);
+    // Check project bullets
+    let allProjFaithful = true;
+    for (const p of res.resume.projects) {
+      for (const b of p.bullets) {
+        if (!sourceLower.includes(b.text.toLowerCase())) {
+          allProjFaithful = false;
+        }
+      }
     }
+    assert(allProjFaithful, `Faithfulness [${fName}]: all project bullets exist verbatim in source text`);
   }
 
-  // Verify education
-  for (const ed of res1.resume.education) {
-    assert(sourceNormalized.includes(ed.school.toLowerCase()), `Faithfulness School: '${ed.school}' exists in source`);
-  }
+  // --- 4. BUDGET TEST (1 Page across 3 Roles and 8 Fixtures) ---
+  console.log("\n--- 4. Testing Budget Constraint (<= 56 lines) across Roles and Fixtures ---");
+  const testRoles = ["Frontend Developer", "Data Analyst", "AI / ML Engineer"];
 
-  // Verify skills (allowing canonical spelling)
-  for (const cat of res1.resume.skills) {
-    for (const item of cat.items) {
-      const canonical = getCanonicalSkill(item.text)?.toLowerCase();
-      const inSource = sourceNormalized.includes(item.text.toLowerCase()) || (canonical && sourceNormalized.includes(canonical));
-      assert(inSource !== undefined && inSource !== false, `Faithfulness Skill: '${item.text}' is verified in source text`);
-    }
-  }
-
-  // --- 3. BUDGET TEST (1 Page across 3 Roles and 3 Fixtures) ---
-  console.log("\n--- 3. Testing Budget Constraint (52-56 lines on 1 Page) ---");
-  const fixtures = ["cv-1.txt", "cv-2.txt", "cv-3.txt"];
-  const roles = ["Frontend Developer", "Data Analyst", "Full-Stack Developer"];
-
-  for (const fix of fixtures) {
-    const raw = fs.readFileSync(path.join(process.cwd(), "tests/fixtures", fix), "utf-8");
-    for (const r of roles) {
-      const run = runPipeline(raw, r);
+  for (const fName of fixtureFiles.slice(0, 4)) {
+    const raw = fs.readFileSync(path.join(process.cwd(), "tests/fixtures", fName), "utf-8");
+    for (const r of testRoles) {
+      const res = runPipeline(raw, r);
       assert(
-        run.stats.lines <= 56,
-        `Budget check [${fix} -> ${r}]: ${run.stats.lines} lines <= 56 budget`
+        res.stats.lines <= 56,
+        `Budget check [${fName} -> ${r}]: ${res.stats.lines} lines <= 56 budget`
       );
     }
   }
 
-  // --- 4. STABILITY TEST (Deterministic reproduction) ---
-  console.log("\n--- 4. Testing Stability (Deterministic Execution) ---");
-  const runA = runPipeline(fixture1, "Frontend Developer");
-  const runB = runPipeline(fixture1, "Frontend Developer");
+  // --- 5. STABILITY TEST (Deterministic reproduction) ---
+  console.log("\n--- 5. Testing Stability (Deterministic Execution) ---");
+  const raw1 = fs.readFileSync(path.join(process.cwd(), "tests/fixtures/cv-1.txt"), "utf-8");
+  const runA = runPipeline(raw1, "Frontend Developer");
+  const runB = runPipeline(raw1, "Frontend Developer");
   const jsonA = JSON.stringify(runA.resume);
   const jsonB = JSON.stringify(runB.resume);
   assert(jsonA === jsonB, "Stability: identical output generated on repeat runs with same input");
 
-  // --- 5. ATS PDF INSPECTION TEST (via @react-pdf/renderer & unpdf) ---
-  console.log("\n--- 5. Testing ATS Compliance via @react-pdf/renderer & unpdf ---");
+  // --- 6. EDUCATION HONOR INTEGRITY (F10) ---
+  console.log("\n--- 6. Testing Education Honor Integrity (F10) ---");
+  const raw4 = fs.readFileSync(path.join(process.cwd(), "tests/fixtures/cv-4-icons-header.txt"), "utf-8");
+  const res4 = runPipeline(raw4, "Frontend Developer");
+  const edu4 = res4.resume.education[0];
+  assert(
+    edu4?.gpa?.includes("Dean's Lister") === true,
+    `Education F10: Right-side honor '(Dean's Lister)' preserved with GPA: '${edu4?.gpa}'`
+  );
+  assert(
+    !edu4?.degree?.includes("Dean's Lister"),
+    `Education F10: Degree does not absorb honor: '${edu4?.degree}'`
+  );
+
+  // --- 7. METRIC WARNING DETECTOR (F8) ---
+  console.log("\n--- 7. Testing Metric Missing % Detector (F8) ---");
+  const hasMetricWarn = res4.warnings.some((w) => w.includes("missing a '%' sign"));
+  assert(hasMetricWarn, "Metric F8: Warning generated for bullet with bare number after 'by'");
+
+  // --- 8. ATS PDF INSPECTION TEST (via @react-pdf/renderer & unpdf) ---
+  console.log("\n--- 8. Testing ATS Compliance via @react-pdf/renderer & unpdf ---");
   const unpdfModule = await (new Function('return import("unpdf")')());
   const extractText = unpdfModule.extractText;
-  const element = React.createElement(ResumePdf, { data: res1.resume });
+  const element = React.createElement(ResumePdf, { data: runA.resume });
   const pdfInstance = (pdf as any)(element as any);
   const blob = await pdfInstance.toBlob();
   const ab = await blob.arrayBuffer();

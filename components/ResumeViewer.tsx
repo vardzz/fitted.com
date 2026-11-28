@@ -41,8 +41,12 @@ export default function ResumeViewer({ tailored, role }: ResumeViewerProps) {
     return <div>No resume generated.</div>;
   }
 
-  const safeName = (tailored.resume.name || "Candidate").replace(/[^a-zA-Z0-9]/g, "_");
-  const safeRole = (role || "Role").replace(/[^a-zA-Z0-9]/g, "_");
+  const safeName = (tailored.resume.name || "Candidate")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  const safeRole = (role || "Role")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
   const fileName = `${safeName}-${safeRole}-Resume.pdf`;
 
   const handleDownloadClick = () => {

@@ -940,8 +940,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* Chatbox: inline below hero at start, fixed at bottom once message is sent; hidden when resume & insights are displayed */}
-      {step !== 3 && (messages.length > 0 || isBuildComplete) && (
+      {/* Chatbox: inline below hero at start, fixed at bottom once message is sent; hidden completely when resume & insights are displayed */}
+      {!(step === 3 || !!tailoredData || messages.some((m) => m.isResumeResult)) && (messages.length > 0 || isBuildComplete) && (
         <div
           className={
             messages.length > 0
