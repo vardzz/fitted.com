@@ -46,10 +46,13 @@ The uploaded file is processed in memory and never stored. A paste-text box stay
 ```text
 app/
   page.tsx              // the whole UI, 3 steps
+  icon.svg              // favicon: copy of logo/fitted-mark.svg
   globals.css           // app styles (see design.md)
   api/parse/route.ts    // POST: PDF file -> plain text
   api/profile/route.ts  // POST: CV text -> structured profile JSON
   api/tailor/route.ts   // POST: profile + role -> tailored resume JSON
+public/
+  fitted-mark.svg       // logo mark used in the page header (see design.md 5a)
 components/
   ResumePdf.tsx         // Harvard-style PDF (react-pdf), used for preview and download
 lib/
@@ -119,24 +122,24 @@ type TailoredResume = {
 
 ## 5a. Resume template (Harvard style)
 
-The output must look like the owner's own resume. `resume-style.md` has the full description and the reference image shows the target; if they differ from this section, `resume-style.md` wins. One template only: single column, serif font, black on white, no photo.
+The output must look like the owner's own resume. `resume-style.md` has the full description and the reference image shows the target; if they differ from this section, `resume-style.md` wins, and its section 0 (ATS-friendly rules) overrides the sizes, fonts, icons and heading names below. One template only: single column, serif font, black on white, no photo.
 
-**Section order (fixed):** Technical Skills, Experience, Projects, Education, Certifications & Achievements. Skip a section if the CV has nothing for it. There is no summary section.
+**Section order (fixed):** Skills, Experience, Projects, Education, Certifications (ATS heading names). Skip a section if the CV has nothing for it. There is no summary section.
 
-| Element                       | Layout and style                                                                                                                                                                                |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Name                          | Centered, serif, bold, about 22pt                                                                                                                                                               |
-| Contact line                  | Centered, one line under the name, about 9pt: portfolio, LinkedIn, GitHub, email, phone, separated by " \| ". Small icons in front of each item are allowed; plain text labels are the fallback |
-| Section heading               | Bold, about 11pt, left aligned, thin black rule under it across the full width                                                                                                                  |
-| Technical Skills              | Bulleted, one line per category: bold label, colon, comma-separated items ("Languages: ..."). Categories come from the user's CV                                                                |
-| Experience entry              | Line 1: bold role, " \| ", italic org on the left; italic dates right-aligned. Then 2-3 bullets                                                                                                 |
-| Project entry                 | Line 1: bold project name, " \| ", italic role, " \| ", italic tech list on the left; date right-aligned. Then 2 bullets                                                                        |
-| Education                     | Line 1: bold school left, dates right. Line 2: italic degree left, bold GPA right. Optional line 3: "Relevant Coursework:" and the list                                                         |
-| Certifications & Achievements | Bullets: bold name, italic issuer, date right-aligned                                                                                                                                           |
-| Body text                     | 9-9.5pt, line-height about 1.15, black on white                                                                                                                                                 |
-| Page                          | A4, narrow margins (about 12mm), exactly one page                                                                                                                                               |
+| Element                       | Layout and style                                                                                                                                          |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Name                          | Centered, serif, bold, 18pt                                                                                                                               |
+| Contact line                  | Centered, one line under the name, 10pt: portfolio, LinkedIn, GitHub, email, phone, separated by " \| ". No icons (ATS-friendly); plain visible text only |
+| Section heading               | Bold, about 11pt, left aligned, thin black rule under it across the full width                                                                            |
+| Technical Skills              | Bulleted, one line per category: bold label, colon, comma-separated items ("Languages: ..."). Categories come from the user's CV                          |
+| Experience entry              | Line 1: bold role, " \| ", italic org on the left; italic dates right-aligned. Then 2-3 bullets                                                           |
+| Project entry                 | Line 1: bold project name, " \| ", italic role, " \| ", italic tech list on the left; date right-aligned. Then 2 bullets                                  |
+| Education                     | Line 1: bold school left, dates right. Line 2: italic degree left, bold GPA right. Optional line 3: "Relevant Coursework:" and the list                   |
+| Certifications & Achievements | Bullets: bold name, italic issuer, date right-aligned                                                                                                     |
+| Body text                     | 10pt (ATS rule, nothing smaller), line-height about 1.15, black on white                                                                                  |
+| Page                          | A4, narrow margins (about 12mm), exactly one page                                                                                                         |
 
-Implementation notes (`@react-pdf/renderer`): this one component is both the preview and the downloaded file, so there is no separate HTML version and no print CSS. Use the built-in fonts `Times-Roman`, `Times-Bold` and `Times-Italic` (no font files needed). Build each left/right line as a `View` with `flexDirection: "row"` and `justifyContent: "space-between"`. Draw the heading rule with `borderBottomWidth: 0.6` on the heading `View`. Use `<Page size="A4">` with about 34pt padding and `wrap={false}` on each entry. If the content overflows one page, reduce items per the limits in the tailoring prompt; do not shrink the font below 9pt.
+Implementation notes (`@react-pdf/renderer`): this one component is both the preview and the downloaded file, so there is no separate HTML version and no print CSS. Use the built-in fonts `Times-Roman`, `Times-Bold` and `Times-Italic` (no font files needed). Build each left/right line as a `View` with `flexDirection: "row"` and `justifyContent: "space-between"`. Draw the heading rule with `borderBottomWidth: 0.6` on the heading `View`. Use `<Page size="A4">` with about 34pt padding and `wrap={false}` on each entry. If the content overflows one page, reduce items per the limits in the tailoring prompt; do not shrink the font below 10pt.
 
 ## 6. Build steps
 
