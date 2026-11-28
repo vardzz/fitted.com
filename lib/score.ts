@@ -95,12 +95,27 @@ export function scoreProfile(profile: Profile, target: TargetAnalysis, roleInput
         itemScore = target.targetWeights.get(canonical) || 1.0;
         matchedKeywords.add(canonical);
       } else {
-        // Check for related skills
-        for (const [t, w] of target.targetWeights.entries()) {
-          const lexEntry = LEXICON[t];
-          if (lexEntry?.related && canonical && lexEntry.related.includes(canonical)) {
-            itemScore = Math.max(itemScore, 0.2);
-            break;
+        // Check subparts if it's a compound skill (e.g. HTML/CSS or PHP & MySQL) (Fixes F4)
+        if (item.text.includes("/") || item.text.includes("&")) {
+          const subparts = item.text.split(/[/&]/).map((s) => s.trim()).filter(Boolean);
+          for (const sub of subparts) {
+            const subCanonical = getCanonicalSkill(sub);
+            if (subCanonical && target.targetWeights.has(subCanonical)) {
+              const subScore = target.targetWeights.get(subCanonical) || 1.0;
+              itemScore = Math.max(itemScore, subScore);
+              matchedKeywords.add(subCanonical);
+            }
+          }
+        }
+
+        if (itemScore === 0) {
+          // Check for related skills
+          for (const [t, w] of target.targetWeights.entries()) {
+            const lexEntry = LEXICON[t];
+            if (lexEntry?.related && canonical && lexEntry.related.includes(canonical)) {
+              itemScore = Math.max(itemScore, 0.2);
+              break;
+            }
           }
         }
       }
@@ -210,7 +225,25 @@ export function scoreProfile(profile: Profile, target: TargetAnalysis, roleInput
     });
 
     const bestBulletScore = scoredBullets.length > 0 ? Math.max(...scoredBullets.map((b) => b.score)) : 0;
-    const totalProjScore = techScore + bestBulletScore;
+
+    // Title match bonus (+0.5) (Fixes F6)
+    let titleBonus = 0;
+    const projTitleLower = `${proj.name} ${proj.role || ""}`.toLowerCase();
+    for (const term of target.targetWeights.keys()) {
+      if (projTitleLower.includes(term)) {
+        titleBonus += 0.5;
+        matchedKeywords.add(term);
+        break;
+      }
+    }
+
+    // Recency bonus (+0.3)
+    let recencyBonus = 0;
+    if (proj.date && /(?:Present|Current|Now|Ongoing|202[567])/i.test(proj.date)) {
+      recencyBonus += 0.3;
+    }
+
+    const totalProjScore = techScore + bestBulletScore + titleBonus + recencyBonus;
 
     return {
       project: proj,

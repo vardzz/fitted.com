@@ -105,7 +105,11 @@ const styles = StyleSheet.create({
 
 function normalizeDateHyphen(dateStr?: string): string {
   if (!dateStr) return "";
-  return dateStr.replace(/\s*(?:–|—|to)\s*/gi, " - ");
+  return dateStr
+    .replace(/[–—−]/g, "-")
+    .replace(/\s+to\s+/gi, " - ")
+    .replace(/\s*-\s*/g, " - ")
+    .trim();
 }
 
 export default function ResumePdf({
@@ -174,7 +178,7 @@ export default function ResumePdf({
                 <Text style={styles.bulletDot}>•</Text>
                 <Text style={styles.bulletContent}>
                   <Text style={styles.bold}>
-                    {skillGroup.category.replace(/^[•\-*–—◦▪▫‣⁃➢·\s]+/, "")}:{" "}
+                    {skillGroup.category.replace(/^[\s•*-–—◦▪▫‣⁃➢·\u2022\u25CF\u25A0\u25E6\u25AA\u2043\u2219\u2013\u2014\uF000-\uF8FF\u00A7\u00B7\u2218\uFEFF]+/, "").trim()}:{" "}
                   </Text>
                   <Text>
                     {skillGroup.items.map((i) => i.text).join(", ")}

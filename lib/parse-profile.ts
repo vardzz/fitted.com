@@ -1,9 +1,10 @@
 import { RE } from "./regex";
 import { Profile } from "./types";
 import { SectionBlocks } from "./sections";
+import { protectTokens } from "./token-protection";
 
 /**
- * Step 3: Parse Sections into Structured Profile (non-llm.md section 8)
+ * Step 3: Parse Sections into Structured Profile (non-llm.md section 8, F1, F2, F3)
  */
 export function parseProfile(
   sections: SectionBlocks,
@@ -13,7 +14,7 @@ export function parseProfile(
   const warnings = [...initialWarnings];
 
   // 1. Header (Name & Contact)
-  const { name, contact } = parseHeader(sections.header, rawFullText);
+  const { name, contact } = parseHeader(sections.header, rawFullText, warnings);
   if (!name || name === "Candidate") {
     warnings.push("Candidate name could not be reliably determined");
   }
@@ -56,7 +57,8 @@ export function parseProfile(
 
 function parseHeader(
   headerLines: string[],
-  fullText: string
+  fullText: string,
+  warnings: string[]
 ): {
   name: string;
   contact: Profile["contact"];
@@ -66,34 +68,18 @@ function parseHeader(
   let phone: string | undefined;
   let location: string | undefined;
   const links: { label: string; url: string }[] = [];
+  const seenUrls = new Set<string>();
 
-  // Email
+  // Extract email FIRST and remove it before URL scanning (Fixes F3)
   const emailMatch = fullText.match(RE.email);
-  if (emailMatch) email = emailMatch[0].trim();
+  if (emailMatch) {
+    email = emailMatch[0].trim();
+  }
 
   // Phone
   const phoneMatch = fullText.match(RE.phone);
   if (phoneMatch && phoneMatch[0].length >= 7 && !phoneMatch[0].includes("@")) {
     phone = phoneMatch[0].trim();
-  }
-
-  // URLs
-  const urlMatches = fullText.match(new RegExp(RE.url.source, "gi")) || [];
-  const seenUrls = new Set<string>();
-
-  for (const rawUrl of urlMatches) {
-    const cleaned = rawUrl.replace(/[.,;)]+$/, "").trim();
-    if (seenUrls.has(cleaned.toLowerCase())) continue;
-    seenUrls.add(cleaned.toLowerCase());
-
-    const url = cleaned.startsWith("http") ? cleaned : `https://${cleaned}`;
-    let label = "Portfolio";
-    const lower = cleaned.toLowerCase();
-    if (lower.includes("linkedin.com")) label = "LinkedIn";
-    else if (lower.includes("github.com")) label = "GitHub";
-    else if (lower.includes("gitlab.com")) label = "GitLab";
-
-    links.push({ label, url: cleaned });
   }
 
   // Candidate Name: first line with 2 to 5 words, no @, no digits, not a heading
@@ -104,25 +90,110 @@ function parseHeader(
   ]);
 
   for (const line of headerLines.slice(0, 8)) {
-    if (RE.email.test(line) || RE.phone.test(line) || line.includes("@") || /\d/.test(line)) continue;
-    if (line.includes("|") || line.includes("•") || line.includes(":")) continue;
+    const cleanedLine = line.replace(/[\uE000-\uF8FF§ï€#H•·\u25A0-\u25FF\u2600-\u26FF]/g, " ").trim();
+    if (RE.email.test(cleanedLine) || RE.phone.test(cleanedLine) || cleanedLine.includes("@") || /\d/.test(cleanedLine)) continue;
+    if (cleanedLine.includes("|") || cleanedLine.includes("•") || cleanedLine.includes(":")) continue;
 
-    const words = line.split(/\s+/).filter(Boolean);
+    const words = cleanedLine.split(/\s+/).filter(Boolean);
     if (words.length >= 2 && words.length <= 5) {
       const lowerWords = words.map((w) => w.toLowerCase());
       const hasInvalid = lowerWords.some((w) => INVALID_NAME_WORDS.has(w));
       if (!hasInvalid && !name) {
-        name = line.replace(/[^a-zA-Z\s.-]/g, "").trim();
+        name = cleanedLine.replace(/[^a-zA-Z\s.-]/g, "").trim();
       }
     }
 
-    if (!location && /^[a-zA-Z\s]+,\s*[a-zA-Z\s]{2,}$/.test(line) && line.length < 40) {
-      location = line.trim();
+    if (!location && /^[a-zA-Z\s]+,\s*[a-zA-Z\s]{2,}$/.test(cleanedLine) && cleanedLine.length < 40) {
+      location = cleanedLine.trim();
     }
   }
 
   if (!name && headerLines.length > 0) {
-    name = headerLines[0].replace(/[^a-zA-Z\s.-]/g, "").trim() || "Candidate";
+    const firstClean = headerLines[0].replace(/[\uE000-\uF8FF§ï€#H•·\u25A0-\u25FF\u2600-\u26FF]/g, " ").trim();
+    name = firstClean.replace(/[^a-zA-Z\s.-]/g, "").trim() || "Candidate";
+  }
+
+  // Classify contact line tokens (Fixes F3)
+  const contactLines = headerLines.filter((l) => l.includes("|") || RE.email.test(l) || RE.phone.test(l) || RE.url.test(l));
+  const fullHeaderText = contactLines.join(" | ");
+
+  // Remove email before tokenizing to avoid email domain becoming a fake link
+  const textWithoutEmail = email ? fullHeaderText.replace(email, " ") : fullHeaderText;
+
+  // Strip private-use icons and symbol glyphs
+  const cleanedContactText = textWithoutEmail
+    .replace(/[\uE000-\uF8FF§ï€#H•·\u25A0-\u25FF\u2600-\u26FF]/g, " ")
+    .trim();
+
+  // Split tokens by '|'
+  const rawTokens = cleanedContactText
+    .split("|")
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+
+  for (const token of rawTokens) {
+    if (RE.email.test(token)) {
+      if (!email) email = token.match(RE.email)![0].trim();
+      continue;
+    }
+
+    if (RE.phone.test(token) && !token.includes("@")) {
+      if (!phone) phone = token.match(RE.phone)![0].trim();
+      continue;
+    }
+
+    // Check if token contains a domain / URL
+    if (RE.url.test(token) || /\.[a-z]{2,}(?:\/|$)/i.test(token)) {
+      const urlMatch = token.match(RE.url) || token.match(/\b[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/i);
+      if (urlMatch) {
+        const urlStr = urlMatch[0].replace(/[.,;)]+$/, "").trim();
+        const lowerUrl = urlStr.toLowerCase();
+        if (!seenUrls.has(lowerUrl)) {
+          seenUrls.add(lowerUrl);
+          let label = "Portfolio";
+          if (lowerUrl.includes("linkedin.com")) label = "LinkedIn";
+          else if (lowerUrl.includes("github.com")) label = "GitHub";
+          else if (lowerUrl.includes("gitlab.com")) label = "GitLab";
+
+          links.push({ label, url: urlStr });
+        }
+        continue;
+      }
+    }
+
+    // Classify bare handle (e.g. 'lucasvance', 'lvance')
+    const bareHandleMatch = token.match(/^[a-zA-Z0-9_.-]{3,35}$/);
+    if (bareHandleMatch) {
+      const handle = bareHandleMatch[0].trim();
+      if (!INVALID_NAME_WORDS.has(handle.toLowerCase()) && handle.toLowerCase() !== name.toLowerCase()) {
+        const hasGitHub = links.some((l) => l.label === "GitHub");
+        const hasLinkedIn = links.some((l) => l.label === "LinkedIn");
+
+        let label = "Handle";
+        let resolvedUrl = handle;
+        if (!hasLinkedIn && (handle.length >= 4 && !hasGitHub)) {
+          label = "LinkedIn";
+          resolvedUrl = `linkedin.com/in/${handle}`;
+        } else if (!hasGitHub) {
+          label = "GitHub";
+          resolvedUrl = `github.com/${handle}`;
+        } else {
+          resolvedUrl = `https://${handle}`;
+        }
+
+        if (!seenUrls.has(resolvedUrl.toLowerCase())) {
+          seenUrls.add(resolvedUrl.toLowerCase());
+          links.push({ label, url: resolvedUrl });
+          warnings.push(`Classified bare handle '${handle}' in contact line as ${label} link`);
+        }
+        continue;
+      }
+    }
+
+    // Token could not be classified: record warning, never drop silently
+    if (token.length > 1) {
+      warnings.push(`Unclassified contact line token: '${token}'`);
+    }
   }
 
   return {
@@ -357,15 +428,17 @@ function parseEducation(lines: string[]): Profile["education"] {
     if (skippingLowerSchool) continue;
 
     if (currentEdu) {
+      // Check for GPA/GWA including parenthetical honor/distinction (Fixes F10)
+      const gpaWithHonor = trimmed.match(/\b(?:GWA|GPA|CGPA)\s*[:\-]?\s*(\d(?:\.\d{1,3})?)(?:\s*\/\s*\d(?:\.\d+)?)?(?:\s*\([^)]+\))?/i);
       if (isDegree && !currentEdu.degree) {
         let degText = trimmed;
-        if (gpaMatch) {
-          currentEdu.gpa = gpaMatch[0].trim();
-          degText = degText.replace(gpaMatch[0], "").replace(/\s{2,}/g, " ").trim();
+        if (gpaWithHonor) {
+          currentEdu.gpa = gpaWithHonor[0].trim();
+          degText = degText.replace(gpaWithHonor[0], "").replace(/\s{2,}/g, " ").trim();
         }
         currentEdu.degree = degText.replace(/^[|,\s-]+|[|,\s-]+$/g, "").trim();
-      } else if (gpaMatch && !currentEdu.gpa) {
-        currentEdu.gpa = gpaMatch[0].trim();
+      } else if (gpaWithHonor && !currentEdu.gpa) {
+        currentEdu.gpa = gpaWithHonor[0].trim();
       } else if (/coursework/i.test(trimmed)) {
         const courses = trimmed
           .replace(/^.*coursework:?/i, "")
@@ -393,9 +466,9 @@ function parseSkills(lines: string[]): Profile["skills"] {
     if (trimmed.includes(":") || (trimmed.includes("|") && trimmed.length < 120)) {
       const sep = trimmed.includes(":") ? ":" : "|";
       const [catName, itemsStr] = trimmed.split(sep, 2);
-      const cleanCatName = catName.replace(/^[•\-*–—◦▪▫‣⁃➢·\u2022\u25E6\u25AA\u2043\u2219\u2013\u2014\s]+/, "").trim();
+      const cleanCatName = catName.replace(/^[\s•*-–—◦▪▫‣⁃➢·\u2022\u25CF\u25A0\u25E6\u25AA\u2043\u2219\u2013\u2014\uF000-\uF8FF\u00A7\u00B7\u2218\uFEFF]+/, "").trim();
       const rawItems = (itemsStr || "")
-        .split(/[,•|/]/)
+        .split(/[,•|]/)
         .map((s) => s.trim())
         .filter((s) => s.length > 0 && s.length < 50);
 
@@ -446,44 +519,50 @@ function parseCertifications(lines: string[]): Profile["certifications"] {
     const cleaned = line.replace(RE.bullet, "").trim();
     if (!cleaned) continue;
 
-    let name = cleaned;
-    let issuer: string | undefined;
-    let date: string | undefined;
+    // Protect credential IDs, codes, emails before extracting dates (Fixes F1)
+    const { text: protectedLine, restore } = protectTokens(cleaned);
 
-    const dateMatch = cleaned.match(RE.dateRange) || cleaned.match(RE.singleDate);
-    if (dateMatch) {
-      date = dateMatch[0].trim();
+    let date: string | undefined;
+    let lineWithoutDate = protectedLine;
+
+    // Anchor date extraction: extract date only at the end of the line (Fixes F1)
+    const trailingMatch = protectedLine.match(RE.trailingDate);
+    if (trailingMatch) {
+      date = trailingMatch[1]?.trim();
+      lineWithoutDate = protectedLine.slice(0, trailingMatch.index).trim();
+    } else {
+      const dateMatch = protectedLine.match(RE.dateRange);
+      if (dateMatch) {
+        date = dateMatch[0].trim();
+        lineWithoutDate = protectedLine.replace(dateMatch[0], "").trim();
+      }
     }
 
-    if (cleaned.includes("|")) {
-      const parts = cleaned.split("|").map((p) => p.trim());
+    lineWithoutDate = lineWithoutDate.replace(/^[|,\s-]+|[|,\s-]+$/g, "").trim();
+
+    let name = lineWithoutDate;
+    let issuer: string | undefined;
+
+    if (lineWithoutDate.includes("|")) {
+      const parts = lineWithoutDate.split("|").map((p) => p.trim());
       name = parts[0];
       issuer = parts.slice(1).join(" | ");
-    } else {
-      const parts = cleaned.split(/\s*(?:–|—)\s*/);
+    } else if (/\s*(?:–|—)\s*/.test(lineWithoutDate)) {
+      const parts = lineWithoutDate.split(/\s*(?:–|—)\s*/);
       name = parts[0]?.trim();
       issuer = parts[1]?.trim();
     }
 
-    if (issuer) {
-      issuer = issuer
-        .replace(RE.dateRange, "")
-        .replace(RE.singleDate, "")
-        .replace(/^[|,\s-]+|[|,\s-]+$/g, "")
-        .trim();
-    }
+    // Restore protected tokens for name and issuer
+    const restoredName = restore(name).replace(/^[|,\s-]+|[|,\s-]+$/g, "").trim();
+    const restoredIssuer = issuer ? restore(issuer).replace(/^[|,\s-]+|[|,\s-]+$/g, "").trim() : undefined;
 
-    if (name) {
-      name = name
-        .replace(RE.dateRange, "")
-        .replace(/^[|,\s-]+|[|,\s-]+$/g, "")
-        .trim();
-
+    if (restoredName) {
       certs.push({
         id: `cert-${certs.length}`,
-        name,
-        issuer: issuer || undefined,
-        date,
+        name: restoredName,
+        issuer: restoredIssuer || undefined,
+        date: date ? restore(date).trim() : undefined,
       });
     }
   }

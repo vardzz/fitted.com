@@ -1,10 +1,56 @@
 import { Profile, TailorResult } from "./types";
 import { ScoredProfile } from "./score";
+import { getLexiconEntry } from "./lexicon";
 
 const BUDGET_MAX_LINES = 54;
 
+function parseYearMonth(dateStr?: string): number {
+  if (!dateStr) return 0;
+  if (/Present|Current|Now|Ongoing/i.test(dateStr)) return 999999;
+  const yearMatch = dateStr.match(/\b(19\d{2}|20\d{2})\b/);
+  const year = yearMatch ? parseInt(yearMatch[1], 10) : 0;
+
+  const MONTHS: Record<string, number> = {
+    jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
+    jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
+  };
+  let month = 1;
+  const monthMatch = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\b/i);
+  if (monthMatch) {
+    month = MONTHS[monthMatch[1].toLowerCase().slice(0, 3)] || 1;
+  }
+  return year * 100 + month;
+}
+
 /**
- * Step 6: Select Within One-Page Budget (non-llm.md sections 12 & 12a)
+ * Formats skill item per F4:
+ * - Keep source spelling by default.
+ * - Replace only known single aliases that differ from display.
+ * - Never replace compound items (containing '/', '&', or multi-word descriptive phrases).
+ */
+function formatSkillItem(sourceText: string): string {
+  const trimmed = sourceText.trim();
+  if (
+    trimmed.includes("/") ||
+    trimmed.includes("&") ||
+    /\b(?:optimization|engineering|systems|development)\b/i.test(trimmed)
+  ) {
+    return trimmed;
+  }
+
+  const lex = getLexiconEntry(trimmed);
+  if (lex) {
+    const isAlias = lex.entry.aliases.some((a) => a.toLowerCase() === trimmed.toLowerCase());
+    if (isAlias && lex.entry.display.toLowerCase() !== trimmed.toLowerCase()) {
+      return lex.entry.display;
+    }
+  }
+
+  return trimmed;
+}
+
+/**
+ * Step 6: Select Within One-Page Budget (non-llm.md sections 12 & 12a, F4, F6, F7, F8, F9)
  */
 export function selectWithinBudget(
   scored: ScoredProfile,
@@ -15,33 +61,61 @@ export function selectWithinBudget(
   resume: TailorResult["resume"];
   dropped: { text: string; reason: string }[];
   stats: { lines: number; budget: number };
+  warnings: string[];
 } {
   const dropped: { text: string; reason: string }[] = [];
+  const warnings: string[] = [];
 
-  // 1. Process Skills (at most 4 categories, matched items first, canonical spelling in Skills section)
+  // 1. Process Skills (at most 4 categories, cap at ~16 total items, matched items first) (Fixes F4 & F9)
+  const MAX_TOTAL_SKILLS = 16;
+  let remainingSkillBudget = MAX_TOTAL_SKILLS;
+
   const sortedCategories = [...scored.skills]
     .filter((c) => c.items.length > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 4);
 
-  const selectedSkills: Profile["skills"] = sortedCategories.map((cat) => {
-    // Sort items so matched items appear first
-    const sortedItems = [...cat.items].sort((a, b) => b.score - a.score);
-    const chosenItems = sortedItems.slice(0, 8); // at most ~8 items per line
+  const selectedSkills: Profile["skills"] = [];
+  for (let cIdx = 0; cIdx < sortedCategories.length; cIdx++) {
+    if (remainingSkillBudget <= 0) break;
+    const cat = sortedCategories[cIdx];
 
-    return {
+    // Sort items: matches first, then score descending
+    const sortedItems = [...cat.items].sort((a, b) => {
+      const aMatch = a.score > 0 ? 1 : 0;
+      const bMatch = b.score > 0 ? 1 : 0;
+      if (bMatch !== aMatch) return bMatch - aMatch;
+      return b.score - a.score;
+    });
+
+    const catsLeft = sortedCategories.length - cIdx;
+    const targetTake = Math.max(2, Math.ceil(remainingSkillBudget / catsLeft));
+    const takeCount = Math.min(sortedItems.length, Math.min(targetTake, remainingSkillBudget));
+    const chosenItems = sortedItems.slice(0, takeCount);
+    const cutItems = sortedItems.slice(takeCount);
+
+    remainingSkillBudget -= chosenItems.length;
+
+    for (const cut of cutItems) {
+      if (cut.score > 0) {
+        dropped.push({
+          text: `Skill: ${cut.text}`,
+          reason: `Omitted to respect 16-skill ATS density cap`,
+        });
+      }
+    }
+
+    selectedSkills.push({
       id: cat.id,
-      category: cat.category,
+      category: cat.category.replace(/^[\s•*-–—◦▪▫‣⁃➢·\u2022\u25CF\u25A0\u25E6\u25AA\u2043\u2219\u2013\u2014\uF000-\uF8FF\u00A7\u00B7\u2218\uFEFF]+/, "").trim(),
       items: chosenItems.map((item) => ({
         id: item.id,
-        // Canonical spelling in Skills section only (non-llm.md 12a)
-        text: item.canonical ? item.canonical : item.text,
+        text: formatSkillItem(item.text),
       })),
-    };
-  });
+    });
+  }
 
-  // 2. Select Experience entries (at most 4 entries, reverse chronological)
-  // Sort candidate entries by relevance to pick top entries
+  // 2. Select Experience entries (at most 3-4 entries, reverse chronological order) (Fixes F7)
   const candidateExp = [...scored.experience].sort((a, b) => b.score - a.score);
   const MAX_EXP = Math.min(4, Math.max(1, candidateExp.length));
   const pickedExp = candidateExp.slice(0, MAX_EXP);
@@ -54,32 +128,76 @@ export function selectWithinBudget(
     });
   }
 
-  // Restore chronological appearance (Harvard convention)
-  const selectedExpEntries = pickedExp
-    .map((e) => {
-      // Bullets sorted by score descending, max 3 bullets per entry
-      const sortedBullets = [...e.scoredBullets].sort((a, b) => b.score - a.score);
-      const keptBullets = sortedBullets.slice(0, 3);
-      const cutBullets = sortedBullets.slice(3);
+  // Allocate bullets by relevance (Fixes F7):
+  // Top role gets up to 4 bullets, mid roles get 2-3, low roles get 1-2.
+  const expWithBullets = pickedExp.map((e, idx) => {
+    let allowedBullets = 3;
+    if (idx === 0) allowedBullets = 4;
+    else if (idx >= 2) allowedBullets = 2;
 
-      for (const cb of cutBullets) {
-        dropped.push({
-          text: `${e.entry.org} - "${cb.text.slice(0, 45)}..."`,
-          reason: `Omitted lower-ranked bullet to strictly preserve 1-page density`,
-        });
-      }
-
-      return {
-        id: e.entry.id,
-        role: e.entry.role,
-        org: e.entry.org,
-        start: e.entry.start,
-        end: e.entry.end,
-        bullets: keptBullets.map((b) => ({ id: b.id, text: b.text })),
-      };
+    // Bullets: prioritize bullets with keyword matches, then score descending
+    const sortedBullets = [...e.scoredBullets].sort((a, b) => {
+      const aHasMatches = a.matches.length > 0 ? 1 : 0;
+      const bHasMatches = b.matches.length > 0 ? 1 : 0;
+      if (bHasMatches !== aHasMatches) return bHasMatches - aHasMatches;
+      return b.score - a.score;
     });
 
-  // 3. Select Projects (at most 3 projects, max 2 bullets per project)
+    const keptBullets = sortedBullets.slice(0, allowedBullets);
+    const cutBullets = sortedBullets.slice(allowedBullets);
+
+    for (const cb of cutBullets) {
+      dropped.push({
+        text: `${e.entry.org} - "${cb.text.slice(0, 45)}..."`,
+        reason: `Omitted lower-ranked bullet to strictly preserve 1-page density`,
+      });
+    }
+
+    return {
+      entry: e.entry,
+      bullets: keptBullets.map((b) => ({ id: b.id, text: b.text })),
+    };
+  });
+
+  // Sort entries in reverse chronological order (ATS standard convention) (Fixes F7)
+  expWithBullets.sort((a, b) => {
+    const aCurrent = /(?:Present|Current|Now|Ongoing)/i.test(a.entry.end || "");
+    const bCurrent = /(?:Present|Current|Now|Ongoing)/i.test(b.entry.end || "");
+
+    if (aCurrent && !bCurrent) return -1;
+    if (!aCurrent && bCurrent) return 1;
+
+    if (aCurrent && bCurrent) {
+      return parseYearMonth(b.entry.start) - parseYearMonth(a.entry.start);
+    }
+
+    const aEndVal = parseYearMonth(a.entry.end || a.entry.start);
+    const bEndVal = parseYearMonth(b.entry.end || b.entry.start);
+    return bEndVal - aEndVal;
+  });
+
+  const selectedExpEntries = expWithBullets.map((e) => ({
+    id: e.entry.id,
+    role: e.entry.role,
+    org: e.entry.org,
+    start: e.entry.start,
+    end: e.entry.end,
+    bullets: e.bullets,
+  }));
+
+  // Detect missing % units on metrics across experience bullets (Fixes F8)
+  for (const exp of selectedExpEntries) {
+    for (const b of exp.bullets) {
+      if (
+        /\b(?:by|of|to|from)\s+(\d{1,3})$/i.test(b.text.trim()) &&
+        /\b(?:reduce|cut|increase|improve|enhance|boost|drop|streamline)\b/i.test(b.text)
+      ) {
+        warnings.push(`Bullet may be missing a '%' sign: "${b.text}" -> suggested: "${b.text}%"`);
+      }
+    }
+  }
+
+  // 3. Select Projects (at most 3 projects, max 2 bullets per project) (Fixes F6)
   const candidateProjects = [...scored.projects].sort((a, b) => b.score - a.score);
   const MAX_PROJECTS = Math.min(3, Math.max(0, candidateProjects.length));
   const pickedProjects = candidateProjects.slice(0, MAX_PROJECTS);
@@ -93,7 +211,12 @@ export function selectWithinBudget(
   }
 
   const selectedProjects = pickedProjects.map((p) => {
-    const sortedBullets = [...p.scoredBullets].sort((a, b) => b.score - a.score);
+    const sortedBullets = [...p.scoredBullets].sort((a, b) => {
+      const aHasMatches = a.matches.length > 0 ? 1 : 0;
+      const bHasMatches = b.matches.length > 0 ? 1 : 0;
+      if (bHasMatches !== aHasMatches) return bHasMatches - aHasMatches;
+      return b.score - a.score;
+    });
     const kept = sortedBullets.slice(0, 2);
     const cut = sortedBullets.slice(2);
 
@@ -135,13 +258,12 @@ export function selectWithinBudget(
   }));
 
   // 5. Line Budget Calculation
-  // Fixed costs:
   let totalLines = 2; // Name & contact
   if (selectedSkills.length > 0) totalLines += 1.5 + selectedSkills.length;
   if (selectedExpEntries.length > 0) {
     totalLines += 1.5;
     for (const exp of selectedExpEntries) {
-      totalLines += 1; // title line
+      totalLines += 1;
       for (const b of exp.bullets) {
         totalLines += Math.ceil(b.text.length / 105);
       }
@@ -165,7 +287,6 @@ export function selectWithinBudget(
 
   // Prune lowest-scoring bullets if still exceeding budget
   if (totalLines > BUDGET_MAX_LINES) {
-    // Cut 1 bullet from projects with 2 bullets first
     for (const p of selectedProjects) {
       if (totalLines <= BUDGET_MAX_LINES) break;
       if (p.bullets.length > 1) {
@@ -196,5 +317,6 @@ export function selectWithinBudget(
       lines: Math.round(totalLines),
       budget: BUDGET_MAX_LINES,
     },
+    warnings,
   };
 }

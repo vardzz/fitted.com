@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import * as fs from "fs";
+import * as path from "path";
 
 /**
  * Scans all source and test files to guarantee no personal strings from the test CV

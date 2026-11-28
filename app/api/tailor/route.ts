@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     const scored = scoreProfile(profile, target, effectiveRole);
 
     // 4. Select Within One-Page Budget
-    const { resume, dropped, stats } = selectWithinBudget(
+    const { resume, dropped, stats, warnings: selectWarnings } = selectWithinBudget(
       scored,
       profile.education || [],
       profile.name,
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
       dropped: dropped.map((d) => ({ item: d.text, reason: d.reason })),
       gaps,
       matched,
-      warnings: profile.warnings || [],
+      warnings: [...(profile.warnings || []), ...(selectWarnings || [])],
       stats,
     };
 

@@ -5,7 +5,11 @@ import { TailoredResume } from "../lib/types";
 
 function normalizeDateHyphen(dateStr?: string): string {
   if (!dateStr) return "";
-  return dateStr.replace(/\s*(?:–|—|to)\s*/gi, " - ");
+  return dateStr
+    .replace(/[–—−]/g, "-")
+    .replace(/\s+to\s+/gi, " - ")
+    .replace(/\s*-\s*/g, " - ")
+    .trim();
 }
 
 export default function HarvardPaper({
@@ -38,7 +42,7 @@ export default function HarvardPaper({
 
   return (
     <article
-      className="harvard-sheet select-text"
+      className="harvard-paper-sheet select-text"
       aria-label="Harvard academic 1-page resume preview"
     >
       {/* Centered Name and Plain Contact Line */}
@@ -60,7 +64,7 @@ export default function HarvardPaper({
               <span className="harvard-bullet-dot">•</span>
               <span className="harvard-bullet-text">
                 <strong>
-                  {skillGroup.category.replace(/^[•\-*–—◦▪▫‣⁃➢·\s]+/, "")}:{" "}
+                  {skillGroup.category.replace(/^[\s•*-–—◦▪▫‣⁃➢·\u2022\u25CF\u25A0\u25E6\u25AA\u2043\u2219\u2013\u2014\uF000-\uF8FF\u00A7\u00B7\u2218\uFEFF]+/, "").trim()}:{" "}
                 </strong>
                 <span>{skillGroup.items?.map((i) => i.text).join(", ")}</span>
               </span>
