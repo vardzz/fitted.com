@@ -42,3 +42,4 @@ next-env.d.ts
 !public/fitted-name.png
 !app/icon.png
 /scratch/
+.forbidden-strings.json
