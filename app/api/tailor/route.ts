@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { tailorResumeRuleBased } from "@/lib/rule-tailor";
-import { callLLM } from "@/lib/llm";
-import { TAILORING_SYSTEM_PROMPT } from "@/lib/prompts";
-import { TailoredResume, Profile } from "@/lib/types";
-import { verifyFaithfulness } from "@/lib/verify";
-
-export const maxDuration = 30;
+import { Profile, TailoredResume } from "@/lib/types";
+import { extractTargetKeywords } from "@/lib/target";
+import { scoreProfile } from "@/lib/score";
+import { selectWithinBudget } from "@/lib/select";
+import { computeGaps } from "@/lib/gaps";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,13 +13,11 @@ export async function POST(req: NextRequest) {
       role,
       posting,
       clarification,
-      cvText,
     }: {
       profile: Profile;
       role: string;
       posting?: string;
       clarification?: string;
-      cvText?: string;
     } = body;
 
     if (!profile) {
@@ -38,120 +34,57 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // PRIMARY: Pure Rule-Based Engine (Zero AI / No Models at All)
-    // Uses algorithmic keyword matching (TF-IDF / token overlap) to score existing CV bullets
-    try {
-      const ruleTailored = tailorResumeRuleBased(
-        profile,
-        role,
-        posting,
-        clarification
-      );
+    const trimmedRole = role.trim();
 
-      // If clarification is needed, return question immediately
-      if (ruleTailored.needs_clarification) {
-        return NextResponse.json({ tailored: ruleTailored, engine: "rule-based" });
-      }
-
-      // Verify faithfulness against source CV text
-      const verified = cvText
-        ? verifyFaithfulness(cvText, ruleTailored)
-        : ruleTailored;
-
-      return NextResponse.json({ tailored: verified, engine: "rule-based" });
-    } catch (ruleErr) {
-      console.warn("Rule-based tailoring encountered issue, attempting fallback:", ruleErr);
+    // 1. Check for single vague role clarification
+    const words = trimmedRole.toLowerCase().split(/\s+/).filter(Boolean);
+    const VAGUE_WORDS = new Set(["engineer", "developer", "software", "programmer", "intern", "associate", "consultant"]);
+    if (
+      !clarification &&
+      (!posting || posting.trim().length === 0) &&
+      words.length === 1 &&
+      VAGUE_WORDS.has(words[0])
+    ) {
+      const response: TailoredResume = {
+        needs_clarification: true,
+        clarifying_question: `Could you clarify which specific track or specialty you are targeting for ${trimmedRole} (e.g. Frontend, Backend, Full Stack, Mobile, or Systems)?`,
+        dropped: [],
+        gaps: [],
+      };
+      return NextResponse.json({ tailored: response });
     }
 
-    // FALLBACK: LLM (Only used if rule-based engine failed and an API key is available)
-    if (!process.env.LLM_API_KEY) {
-      // Re-run rule-based without throwing
-      const ruleTailored = tailorResumeRuleBased(profile, role, posting, clarification);
-      const verified = cvText ? verifyFaithfulness(cvText, ruleTailored) : ruleTailored;
-      return NextResponse.json({ tailored: verified, engine: "rule-based" });
-    }
+    // 2. Build target keywords
+    const effectiveRole = clarification ? `${trimmedRole} ${clarification}` : trimmedRole;
+    const target = extractTargetKeywords(effectiveRole, posting);
 
-    const clarificationInstruction = clarification
-      ? `User provided this clarification to your question: "${clarification}". You MUST NOT ask another question. Set needs_clarification to false and generate the full resume.`
-      : `If the target role is too vague (e.g. just "developer" or "engineer") to tailor well, return { "needs_clarification": true, "clarifying_question": "Your question here", "dropped": [], "gaps": [] }. Otherwise, return { "needs_clarification": false, "resume": { ... }, "dropped": [...], "gaps": [...] }.`;
+    // 3. Score Profile Items
+    const scored = scoreProfile(profile, target, effectiveRole);
 
-    const prompt = `${TAILORING_SYSTEM_PROMPT}
-
-Target Role: ${role.trim()}
-${posting ? `Job Posting Details / Requirements:\n${posting.trim()}\n` : ""}
-${clarification ? `Clarification Answer: ${clarification.trim()}\n` : ""}
-
-Rule for Clarification:
-${clarificationInstruction}
-
-Expected JSON Schema:
-{
-  "needs_clarification": boolean,
-  "clarifying_question": "string (optional)",
-  "resume": {
-    "name": "string",
-    "contact": {
-      "email": "string",
-      "phone": "string",
-      "location": "string",
-      "links": [{ "label": "string", "url": "string" }]
-    },
-    "skills": [{ "category": "string", "items": ["string"] }],
-    "experience": [{
-      "role": "string",
-      "org": "string",
-      "start": "string",
-      "end": "string",
-      "bullets": ["string"]
-    }],
-    "projects": [{
-      "name": "string",
-      "tech": ["string"],
-      "role": "string",
-      "start": "string",
-      "end": "string",
-      "bullets": ["string"]
-    }],
-    "education": [{
-      "school": "string",
-      "degree": "string",
-      "gpa": "string",
-      "start": "string",
-      "end": "string",
-      "coursework": ["string"]
-    }],
-    "certifications": [{
-      "name": "string",
-      "issuer": "string",
-      "date": "string"
-    }]
-  },
-  "dropped": [{ "item": "string", "reason": "string" }],
-  "gaps": ["string"]
-}
-
-Candidate Profile to tailor from:
-${JSON.stringify(profile, null, 2)}`;
-
-    const rawTailored = await callLLM<TailoredResume>(
-      TAILORING_SYSTEM_PROMPT,
-      prompt
+    // 4. Select Within One-Page Budget
+    const { resume, dropped, stats } = selectWithinBudget(
+      scored,
+      profile.education || [],
+      profile.name,
+      profile.contact
     );
 
-    if (clarification && rawTailored.needs_clarification) {
-      rawTailored.needs_clarification = false;
-    }
+    // 5. Compute Gaps & Matched Keywords
+    const { matched, gaps } = computeGaps(target.requiredTerms, scored.matchedKeywords);
 
-    const verified = cvText
-      ? verifyFaithfulness(cvText, rawTailored)
-      : rawTailored;
+    const tailored: TailoredResume = {
+      needs_clarification: false,
+      resume,
+      dropped: dropped.map((d) => ({ item: d.text, reason: d.reason })),
+      gaps,
+      matched,
+      warnings: profile.warnings || [],
+      stats,
+    };
 
-    return NextResponse.json({ tailored: verified, engine: "llm-fallback" });
-  } catch (err: any) {
-    console.error("Tailoring error:", err);
-    return NextResponse.json(
-      { error: err.message || "Failed to tailor resume." },
-      { status: 500 }
-    );
+    return NextResponse.json({ tailored });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Internal tailoring error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

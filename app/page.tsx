@@ -680,6 +680,60 @@ export default function Home() {
 
                   {/* BOTTOM: Tailoring Insights Stack */}
                   <div className="ai-insights-stack">
+                    {/* Matched Role Keywords */}
+                    {(m.tailoredData || tailoredData)?.matched &&
+                    (m.tailoredData || tailoredData)!.matched!.length > 0 && (
+                      <div className="insight-card">
+                        <div className="insight-card-header">
+                          <h3 className="insight-card-title">Matched Role Keywords</h3>
+                          <p className="insight-card-subtitle">
+                            Competencies from the role and job requirements verified in your CV.
+                          </p>
+                        </div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "8px" }}>
+                          {(m.tailoredData || tailoredData)!.matched!.map((kw, idx) => (
+                            <span
+                              key={idx}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                fontSize: "12px",
+                                fontFamily: "var(--font-mono)",
+                                padding: "3px 8px",
+                                borderRadius: "999px",
+                                backgroundColor: "var(--color-accent-soft, #eaefff)",
+                                color: "var(--color-accent, #2f5bea)",
+                                fontWeight: 500,
+                              }}
+                            >
+                              ✓ {kw}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Parsing Warnings (if any) */}
+                    {(m.tailoredData || tailoredData)?.warnings &&
+                    (m.tailoredData || tailoredData)!.warnings!.length > 0 && (
+                      <div className="insight-card" style={{ borderLeft: "3px solid #b45309" }}>
+                        <div className="insight-card-header">
+                          <h3 className="insight-card-title" style={{ color: "#b45309" }}>Parsing Notice</h3>
+                          <p className="insight-card-subtitle">
+                            The following layout notices were flagged during deterministic parsing:
+                          </p>
+                        </div>
+                        <ul className="insight-list">
+                          {(m.tailoredData || tailoredData)!.warnings!.map((warn, idx) => (
+                            <li key={idx} className="insight-item">
+                              <span className="insight-dot gap" style={{ backgroundColor: "#b45309" }} />
+                              <span style={{ fontSize: "13px" }}>{warn}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
                     {/* What I cut and why */}
                     <div className="insight-card">
                       <div className="insight-card-header">

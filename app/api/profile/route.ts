@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractProfileRuleBased } from "@/lib/rule-extractor";
-import { callLLM } from "@/lib/llm";
-import { EXTRACTION_SYSTEM_PROMPT } from "@/lib/prompts";
-import { Profile } from "@/lib/types";
-
-export const maxDuration = 30;
+import { normalizeText } from "@/lib/normalize";
+import { splitSections } from "@/lib/sections";
+import { parseProfile } from "@/lib/parse-profile";
 
 const MAX_CV_LENGTH = 20000;
 
@@ -29,88 +26,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // PRIMARY: Pure Rule-Based Heuristic & Regex Engine (Zero AI / No Models)
-    try {
-      const ruleProfile = extractProfileRuleBased(cvText);
+    // Pure deterministic rule pipeline (Zero AI / No Models)
+    // 1. Normalize
+    const { normalizedText, lines } = normalizeText(cvText);
 
-      // Verify that rule-based engine successfully extracted core structural sections
-      const hasContent =
-        (ruleProfile.experience && ruleProfile.experience.length > 0) ||
-        (ruleProfile.education && ruleProfile.education.length > 0) ||
-        (ruleProfile.skills && ruleProfile.skills.length > 0) ||
-        (ruleProfile.projects && ruleProfile.projects.length > 0);
+    // 2. Split Sections
+    const { sections, warnings: sectionWarnings } = splitSections(lines);
 
-      if (hasContent) {
-        return NextResponse.json({ profile: ruleProfile, engine: "rule-based" });
-      }
-    } catch (ruleErr) {
-      console.warn("Rule-based extraction encountered issue, attempting fallback:", ruleErr);
-    }
+    // 3. Parse Profile
+    const profile = parseProfile(sections, normalizedText, sectionWarnings);
 
-    // FALLBACK: LLM (Only used if rule-based engine finds no structure and an API key is available)
-    if (!process.env.LLM_API_KEY) {
-      // If no API key configured, return rule-based result anyway
-      const fallbackRuleProfile = extractProfileRuleBased(cvText);
-      return NextResponse.json({ profile: fallbackRuleProfile, engine: "rule-based" });
-    }
-
-    const promptWithSchema = `${EXTRACTION_SYSTEM_PROMPT}
-
-Expected JSON Schema:
-{
-  "name": "string",
-  "contact": {
-    "email": "string",
-    "phone": "string",
-    "location": "string",
-    "links": [{ "label": "string", "url": "string" }]
-  },
-  "skills": [{ "category": "string", "items": ["string"] }],
-  "experience": [{
-    "role": "string",
-    "org": "string",
-    "start": "string",
-    "end": "string",
-    "bullets": ["string"]
-  }],
-  "projects": [{
-    "name": "string",
-    "tech": ["string"],
-    "role": "string",
-    "start": "string",
-    "end": "string",
-    "bullets": ["string"]
-  }],
-  "education": [{
-    "school": "string",
-    "degree": "string",
-    "gpa": "string",
-    "start": "string",
-    "end": "string",
-    "coursework": ["string"]
-  }],
-  "certifications": [{
-    "name": "string",
-    "issuer": "string",
-    "date": "string"
-  }],
-  "other": ["string"]
-}
-
-CV Text to extract:
-${cvText}`;
-
-    const profile = await callLLM<Profile>(
-      EXTRACTION_SYSTEM_PROMPT,
-      promptWithSchema
-    );
-
-    return NextResponse.json({ profile, engine: "llm-fallback" });
-  } catch (err: any) {
-    console.error("Profile extraction error:", err);
-    return NextResponse.json(
-      { error: err.message || "Failed to extract profile from CV." },
-      { status: 500 }
-    );
+    return NextResponse.json({ profile });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Internal extraction error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
