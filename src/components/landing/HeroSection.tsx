@@ -4,11 +4,6 @@ import Link from "next/link";
 export default function HeroSection() {
   return (
     <section className="landing-hero stagger-2">
-      <div className="landing-pill-tag">
-        <span className="landing-pill-dot" />
-        <span>Deterministic CV Tailoring • Zero LLM Hallucinations</span>
-      </div>
-
       <h1 className="landing-hero-title">
         Your CV, cut to fit the role.
       </h1>
