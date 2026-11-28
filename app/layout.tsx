@@ -19,10 +19,10 @@ export const metadata: Metadata = {
   description: "One-page Harvard-style tailored resume generated from your CV.",
   icons: {
     icon: [
-      { url: "/fitted-logo.png", type: "image/png" },
+      { url: "/fitted-logo.png?v=2", type: "image/png" },
     ],
-    shortcut: "/fitted-logo.png",
-    apple: "/fitted-logo.png",
+    shortcut: "/fitted-logo.png?v=2",
+    apple: "/fitted-logo.png?v=2",
   },
 };
 
