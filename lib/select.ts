@@ -50,6 +50,17 @@ function formatSkillItem(sourceText: string): string {
   return trimmed;
 }
 
+function truncateSnippet(text: string, maxLen: number = 60): string {
+  const clean = text.trim();
+  if (clean.length <= maxLen) return clean;
+  const cut = clean.slice(0, maxLen);
+  const lastSpace = cut.lastIndexOf(" ");
+  if (lastSpace > 25) {
+    return `${cut.slice(0, lastSpace)}...`;
+  }
+  return `${cut}...`;
+}
+
 /**
  * Step 6: Select Within One-Page Budget (non-llm.md sections 12 & 12a, F4, F6, F7, F8, F9)
  */
@@ -101,7 +112,7 @@ export function selectWithinBudget(
       if (cut.score > 0) {
         dropped.push({
           text: `Skill: ${cut.text}`,
-          reason: `Exceeds 16-skill ATS density cap`,
+          reason: `Exceeds the 16-skill ATS density cap; omitted in favor of higher-demand core tools for this role.`,
         });
       }
     }
@@ -125,7 +136,7 @@ export function selectWithinBudget(
   for (const d of droppedExp) {
     dropped.push({
       text: `${d.entry.role} at ${d.entry.org}`,
-      reason: `Lower role match; omitted for 1-page budget`,
+      reason: `Lower keyword relevance; omitted to keep career history focused on your most relevant roles.`,
     });
   }
 
@@ -148,9 +159,24 @@ export function selectWithinBudget(
     const cutBullets = sortedBullets.slice(allowedBullets);
 
     for (const cb of cutBullets) {
+      let reason = "Omitted to maintain a concise 3-bullet cap per job, prioritizing entries with direct technical keywords.";
+      if (cb.matches.length === 0) {
+        if (/\b(?:video|media|social|content|promo|collateral|marketing|schedule|calendar)\b/i.test(cb.text)) {
+          reason = "Multimedia and content production task; omitted to focus on core engineering and software development.";
+        } else if (/\b(?:research|documentation|maintenance|assist|coordinate)\b/i.test(cb.text)) {
+          reason = "General support and maintenance task; prioritized hands-on technical deliverables and achievements.";
+        } else if (/\b(?:collaborate|partner|coordinate|team)\b/i.test(cb.text)) {
+          reason = "General collaboration statement; prioritized quantifiable accomplishments with technical stack keywords.";
+        } else {
+          reason = "Lacks target role keywords; prioritized bullets that directly match job competencies.";
+        }
+      } else {
+        reason = "Lower keyword density than other bullets in this role; omitted to fit the 1-page Harvard layout.";
+      }
+
       dropped.push({
-        text: `${e.entry.org} - "${cb.text.slice(0, 45)}..."`,
-        reason: `Lower keyword alignment; omitted for 1-page density`,
+        text: `${e.entry.org} - "${truncateSnippet(cb.text, 55)}"`,
+        reason,
       });
     }
 
@@ -207,7 +233,7 @@ export function selectWithinBudget(
   for (const dp of droppedProjects) {
     dropped.push({
       text: `Project: ${dp.project.name}`,
-      reason: `Lower role relevance; omitted for 1-page budget`,
+      reason: `Secondary project; prioritized projects demonstrating stronger alignment with target role competencies.`,
     });
   }
 
@@ -222,9 +248,13 @@ export function selectWithinBudget(
     const cut = sortedBullets.slice(2);
 
     for (const cb of cut) {
+      let reason = "Omitted to enforce the 2-bullet per project limit, highlighting primary technical architecture.";
+      if (/\b(?:validation|feedback|classmate|upvote|community|recognition)\b/i.test(cb.text)) {
+        reason = "Informal peer feedback; prioritized core technical features, architecture, and deployment stack.";
+      }
       dropped.push({
-        text: `${p.project.name} - "${cb.text.slice(0, 45)}..."`,
-        reason: `Omitted for 1-page limit`,
+        text: `${p.project.name} - "${truncateSnippet(cb.text, 55)}"`,
+        reason,
       });
     }
 
@@ -247,7 +277,7 @@ export function selectWithinBudget(
   for (const dc of droppedCerts) {
     dropped.push({
       text: `Certification: ${dc.cert.name}`,
-      reason: `Lower priority; omitted for 1-page budget`,
+      reason: `Secondary credential omitted to maintain strict 1-page budget, prioritizing primary technical certifications.`,
     });
   }
 
