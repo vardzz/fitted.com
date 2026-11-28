@@ -1939,17 +1939,19 @@ input, textarea {
   box-sizing: border-box;
 }
 
-/* 1. Right Foreground Sheet ("John Doe", crisp, tilted -22deg) */
+/* 1. Right Foreground Sheet ("John Doe", blurred depth of field, tilted -22deg) */
 .hero-sheet-right {
-  right: max(16px, calc(50% - 640px));
+  right: max(16px, calc(50% - 660px));
   bottom: -40px;
   width: 320px;
   height: 420px;
-  z-index: 2;
+  z-index: 1;
+  filter: blur(4.5px);
+  opacity: 0.58;
   box-shadow: 
-    0 24px 48px -12px rgba(0, 0, 0, 0.09),
-    0 8px 16px -4px rgba(0, 0, 0, 0.04),
-    0 0 0 1px rgba(0, 0, 0, 0.03);
+    0 24px 48px -12px rgba(0, 0, 0, 0.08),
+    0 8px 16px -4px rgba(0, 0, 0, 0.03),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
   transform: rotate(-22deg);
   animation: sheet-float-right 8s ease-in-out infinite alternate;
 }
