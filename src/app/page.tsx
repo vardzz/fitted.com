@@ -6,14 +6,14 @@ export default function LandingPage() {
   return (
     <div className="landing-viewport">
       {/* 1. MINIMALIST PILL-SHAPED NAVBAR */}
-      <header className="landing-navbar-wrapper">
+      <header className="landing-navbar-wrapper stagger-1">
         <nav className="landing-navbar">
           <Link href="/" className="landing-nav-logo">
             <Image
               src="/fitted-name.png"
               alt="Fitted"
-              width={110}
-              height={30}
+              width={105}
+              height={28}
               priority
             />
           </Link>
@@ -36,10 +36,10 @@ export default function LandingPage() {
         </nav>
       </header>
 
-      {/* MAIN CONTENT WITH LARGE HORIZONTAL PADDING */}
+      {/* MAIN CONTENT */}
       <main style={{ flex: 1 }}>
         {/* 2. HERO SECTION */}
-        <section className="landing-hero">
+        <section className="landing-hero stagger-2">
           <div className="landing-pill-tag">
             <span className="landing-pill-dot" />
             <span>Deterministic CV Tailoring • Zero LLM Hallucinations</span>
@@ -57,15 +57,15 @@ export default function LandingPage() {
             <Link href="/app" className="landing-btn-primary">
               <span>Start Tailoring — It’s Free</span>
               <svg
-                width={16}
-                height={16}
+                width={15}
+                height={15}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                style={{ marginLeft: 4 }}
+                style={{ marginLeft: 2 }}
               >
                 <path d="M5 12h14" />
                 <path d="m12 5 7 7-7 7" />
@@ -78,12 +78,15 @@ export default function LandingPage() {
         </section>
 
         {/* 3. PROBLEM SECTION */}
-        <section id="problem" className="landing-section">
+        <section id="problem" className="landing-section stagger-3">
           <div className="landing-section-header">
             <span className="landing-section-tag">The Problem</span>
             <h2 className="landing-section-title">
               Why traditional CVs fail to land interviews.
             </h2>
+            <p className="landing-section-subtitle">
+              Recruiters scan in 6 seconds. Most applicant resumes get rejected before reaching hiring managers.
+            </p>
           </div>
 
           <div className="landing-problem-grid">
@@ -91,7 +94,7 @@ export default function LandingPage() {
               <span className="landing-problem-num">01</span>
               <h3 className="landing-problem-card-title">The Two-Page Trap</h3>
               <p className="landing-problem-card-desc">
-                Recruiters scan in 6 seconds. Multi-page early-to-mid career resumes dilute your strongest technical achievements and get deprioritized.
+                Multi-page early-to-mid career resumes dilute your strongest technical achievements. Recruiters prioritize high-density, single-page profiles.
               </p>
             </div>
 
@@ -114,12 +117,15 @@ export default function LandingPage() {
         </section>
 
         {/* 4. FEATURE SECTION */}
-        <section id="features" className="landing-section">
+        <section id="features" className="landing-section stagger-4">
           <div className="landing-section-header">
             <span className="landing-section-tag">The Solution</span>
             <h2 className="landing-section-title">
               Engineered for absolute accuracy.
             </h2>
+            <p className="landing-section-subtitle">
+              Every section, bullet, and line is budgeted with mathematical precision.
+            </p>
           </div>
 
           <div className="landing-features-grid">
@@ -177,8 +183,8 @@ export default function LandingPage() {
 
           <a href="mailto:vardz.dev@gmail.com" className="landing-feedback-box">
             <svg
-              width={16}
-              height={16}
+              width={15}
+              height={15}
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
