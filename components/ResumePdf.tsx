@@ -33,20 +33,22 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
   header: {
-    marginBottom: 6,
+    marginBottom: 8,
     textAlign: "center",
   },
   name: {
     fontSize: 18,
     fontFamily: "Times-Bold",
     textAlign: "center",
-    marginBottom: 3,
+    lineHeight: 1.2,
+    marginBottom: 6,
+    paddingBottom: 2,
   },
   contactLine: {
     fontSize: 10,
     fontFamily: "Times-Roman",
     textAlign: "center",
-    lineHeight: 1.15,
+    lineHeight: 1.3,
   },
   section: {
     marginTop: 6,
