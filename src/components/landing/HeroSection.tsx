@@ -22,34 +22,39 @@ export default function HeroSection() {
       <FloatingVisuals />
 
       <div className="landing-hero-inner">
+        {/* Minimalist Pill Badge */}
+        <div className="landing-hero-badge">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="#0a0a0a"
+            aria-hidden="true"
+          >
+            <path d="M12 0 C12 6.627 6.627 12 0 12 C6.627 12 12 17.373 12 24 C12 17.373 17.373 12 24 12 C17.373 12 12 6.627 12 0 Z" />
+          </svg>
+          <span>Tailor your CV for any role</span>
+        </div>
+
+        {/* Editorial Serif Headline with Italic "fit" */}
         <h1 className="landing-hero-title">
-          Your CV, cut to fit the role.
+          Your CV, cut to <em>fit</em> the role.
         </h1>
 
+        {/* Reference Inspo Subtitle */}
         <p className="landing-hero-desc">
-          A deterministic, rule-based engine that shapes your CV into an academic Harvard-style one-page resume. Never invents facts. 100% ATS-friendly.
+          Upload your CV, choose your target role, and get a tailored, one-page
+          resume that highlights what matters — no fluff, no fiction.
         </p>
 
+        {/* Action Buttons */}
         <div className="landing-hero-actions">
           <Link href="/app" className="landing-btn-primary">
-            <span>Start Tailoring — It’s Free</span>
-            <svg
-              width={15}
-              height={15}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ marginLeft: 2 }}
-            >
-              <path d="M5 12h14" />
-              <path d="m12 5 7 7-7 7" />
-            </svg>
+            <span>Try Fitted for Free</span>
+            <span className="landing-btn-arrow" aria-hidden="true">→</span>
           </Link>
           <a href="#problem" className="landing-btn-secondary">
-            Why Fitted?
+            Learn More
           </a>
         </div>
       </div>
