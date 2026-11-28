@@ -265,7 +265,7 @@ export default function ResumePdf({
               <View key={idx} style={styles.bulletRow}>
                 <Text style={styles.bulletDot}>•</Text>
                 <Text style={styles.bulletContent}>
-                  <Text style={styles.bold}>{skillGroup.category}: </Text>
+                  <Text style={styles.bold}>{skillGroup.category.replace(/^[•\-*–—◦▪▫‣⁃➢·\u2022\u25E6\u25AA\u2043\u2219\u2013\u2014\s]+/, "")}: </Text>
                   <Text>{skillGroup.items?.join(", ")}</Text>
                 </Text>
               </View>

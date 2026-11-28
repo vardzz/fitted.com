@@ -124,7 +124,7 @@ export default function HarvardPaper({ data }: HarvardPaperProps) {
             <div key={idx} className="harvard-bullet-row">
               <span className="harvard-bullet-dot">•</span>
               <span className="harvard-bullet-text">
-                <strong>{skillGroup.category}: </strong>
+                <strong>{skillGroup.category.replace(/^[•\-*–—◦▪▫‣⁃➢·\u2022\u25E6\u25AA\u2043\u2219\u2013\u2014\s]+/, "")}: </strong>
                 <span>{skillGroup.items?.join(", ")}</span>
               </span>
             </div>

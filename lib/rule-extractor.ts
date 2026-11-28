@@ -17,7 +17,7 @@ const BULLET_PREFIX_REGEX = /^[•\-*–—◦▪▫‣⁃➢·\u2022\u25E6\u25A
 
 // Common Date Range Patterns
 // e.g. "Aug 2024 - Present", "June 2024 – Oct 2024", "2020 - 2024", "08/2022 – Present", "2024 – 2026"
-const DATE_RANGE_REGEX = /(?:(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?\d{4}\s*(?:-|–|—|to)\s*(?:present|current|(?:(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?\d{4})/i;
+const DATE_RANGE_REGEX = /(?:(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?\d{4}\s*(?:-|–|—|\bto\b)\s*(?:present|current|expected\s+\d{4}|(?:(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?\d{4})/i;
 const SINGLE_YEAR_OR_DATE_REGEX = /\b(?:(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?(?:20\d\d|19\d\d)\b/i;
 
 // Section Heading Regex Patterns (Flexible matching across variations)
@@ -235,7 +235,7 @@ function parseExperience(lines: string[]): Profile["experience"] {
     // 1. It contains a date range and is not a bullet
     // 2. OR it contains "|" or " at " or " – " separating title and company
     const hasOrgSeparator = /\s+(?:\||–|—|at)\s+/i.test(line);
-    const looksLikeHeader = (dateMatch || hasOrgSeparator) && !isBullet && line.length < 120;
+    const looksLikeHeader = (dateMatch || hasOrgSeparator) && !isBullet && line.length < 140;
 
     if (looksLikeHeader) {
       if (currentEntry) entries.push(currentEntry);
@@ -246,7 +246,7 @@ function parseExperience(lines: string[]): Profile["experience"] {
 
       if (dateMatch) {
         const dateStr = dateMatch[0].trim();
-        const parts = dateStr.split(/\s*(?:-|–|—|to)\s*/i);
+        const parts = dateStr.split(/\s*(?:-|–|—|\bto\b)\s*/i);
         start = parts[0]?.trim();
         end = parts[1]?.trim();
         cleanedLine = line.replace(dateMatch[0], "").replace(/^[|,\s-]+|[|,\s-]+$/g, "").trim();
@@ -314,59 +314,67 @@ function parseProjects(lines: string[]): Profile["projects"] {
   let currentProject: Profile["projects"][0] | null = null;
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+    const line = lines[i].trim();
+    if (!line) continue;
+
     const isBullet = BULLET_PREFIX_REGEX.test(line);
 
     // A project header:
     // 1. Not a bullet
-    // 2. Length < 90 characters
-    // 3. Does not start with lower-case or connecting prepositions (which indicate wrapped bullet text)
-    const isContinuationWord = /^(?:during|using|with|and|by|for|in|on|at|from|to|as|while|through|under)\b/i.test(line);
-    const startsWithLowercase = /^[a-z]/.test(line);
+    // 2. Contains '|' or starts before any project exists
+    const hasProjectStructure = line.includes("|");
+    const isHeader = !isBullet && (hasProjectStructure || (!currentProject && line.length < 80));
 
-    if (!isBullet && line.length < 90 && !isContinuationWord && !startsWithLowercase && line.length > 0) {
-      // Check if line looks like a project header (e.g. contains "|", "(", or is short title)
-      const hasSeparator = line.includes("|") || line.includes("(") || line.includes("–") || line.includes("-");
-      // Or if previous project already has bullets and this is a distinct title
-      const canBeNewProject = hasSeparator || !currentProject || (currentProject.bullets.length > 0);
+    if (isHeader) {
+      if (currentProject) entries.push(currentProject);
 
-      if (canBeNewProject) {
-        if (currentProject) entries.push(currentProject);
+      let name = line;
+      let role: string | undefined;
+      let tech: string[] = [];
+      let start: string | undefined;
+      let end: string | undefined;
 
-        let name = line;
-        let role: string | undefined;
-        let tech: string[] = [];
+      // Extract date if present at the end
+      const dateMatch = line.match(DATE_RANGE_REGEX) || line.match(SINGLE_YEAR_OR_DATE_REGEX);
+      let lineWithoutDate = line;
+      if (dateMatch) {
+        const dateStr = dateMatch[0].trim();
+        const parts = dateStr.split(/\s*(?:-|–|—|\bto\b)\s*/i);
+        start = parts[0]?.trim();
+        end = parts[1]?.trim();
+        lineWithoutDate = line.replace(dateMatch[0], "").replace(/[|,\s-]+$/, "").trim();
+      }
 
-        if (line.includes("|")) {
-          const parts = line.split("|").map((p) => p.trim());
-          name = parts[0];
-          if (parts.length >= 3) {
+      if (lineWithoutDate.includes("|")) {
+        const parts = lineWithoutDate.split("|").map((p) => p.trim()).filter(Boolean);
+        name = parts[0];
+        if (parts.length >= 3) {
+          role = parts[1];
+          tech = parts.slice(2).join(", ").split(/[,/]/).map((t) => t.trim()).filter(Boolean);
+        } else if (parts.length === 2) {
+          if (/developer|engineer|lead|creator|author|contributor|architect|designer/i.test(parts[1])) {
             role = parts[1];
-            tech = parts[2].split(/[,/]/).map((t) => t.trim()).filter(Boolean);
-          } else if (parts.length === 2) {
-            // Check if second part is a role or a tech list
-            if (/engineer|developer|lead|creator|author|contributor/i.test(parts[1])) {
-              role = parts[1];
-            } else {
-              tech = parts[1].split(/[,/]/).map((t) => t.trim()).filter(Boolean);
-            }
-          }
-        } else if (line.includes("(") && line.includes(")")) {
-          const match = line.match(/^(.*?)\s*\((.*?)\)/);
-          if (match) {
-            name = match[1].trim();
-            tech = match[2].split(/[,/]/).map((t) => t.trim()).filter(Boolean);
+          } else {
+            tech = parts[1].split(/[,/]/).map((t) => t.trim()).filter(Boolean);
           }
         }
-
-        currentProject = {
-          name: name || "Project",
-          role,
-          tech,
-          bullets: [],
-        };
-        continue;
+      } else if (lineWithoutDate.includes("(") && lineWithoutDate.includes(")")) {
+        const match = lineWithoutDate.match(/^(.*?)\s*\((.*?)\)/);
+        if (match) {
+          name = match[1].trim();
+          tech = match[2].split(/[,/]/).map((t) => t.trim()).filter(Boolean);
+        }
       }
+
+      currentProject = {
+        name: name || "Project",
+        role,
+        tech,
+        start,
+        end,
+        bullets: [],
+      };
+      continue;
     }
 
     if (isBullet) {
@@ -393,42 +401,66 @@ function parseProjects(lines: string[]): Profile["projects"] {
 function parseEducation(lines: string[]): Profile["education"] {
   const entries: Profile["education"] = [];
   let currentEdu: Profile["education"][0] | null = null;
+  let skippingLowerSchool = false;
 
   for (const line of lines) {
-    const dateMatch = line.match(DATE_RANGE_REGEX) || line.match(SINGLE_YEAR_OR_DATE_REGEX);
-    const gpaMatch = line.match(/(?:gpa:?\s*)([0-4]\.\d{1,2}(?:\s*\/\s*4(?:\.0)?)?)/i);
+    const trimmed = line.trim();
+    if (!trimmed) continue;
 
-    const isDegree = /(?:bachelor|master|b\.s|m\.s|b\.a|m\.a|ph\.d|associate|degree|diploma)/i.test(line);
-    const isSchool = /(?:university|college|institute|academy|school|polytechnic)/i.test(line);
-
-    if (isSchool || (!currentEdu && line.length < 80)) {
+    // Filter out non-tertiary education (high school, senior high, STEM strand, elementary)
+    const isLowerSchool = /\b(?:high\s+school|elementary|primary|junior\s+high|senior\s+high|grade\s+school|middle\s+school|stem\s+strand|k-12)\b/i.test(trimmed);
+    if (isLowerSchool) {
       if (currentEdu) entries.push(currentEdu);
-      const newEdu: Profile["education"][0] = {
-        school: line.replace(DATE_RANGE_REGEX, "").trim() || "University",
-      };
-
-      if (dateMatch) {
-        newEdu.end = dateMatch[0].trim();
-      }
-      currentEdu = newEdu;
+      currentEdu = null;
+      skippingLowerSchool = true;
       continue;
     }
 
+    const isCollege = /\b(?:university|college|institute|pamantasan|polytechnic|academy)\b/i.test(trimmed);
+    const dateMatch = trimmed.match(DATE_RANGE_REGEX) || trimmed.match(SINGLE_YEAR_OR_DATE_REGEX);
+    const gpaMatch = trimmed.match(/(?:(?:gpa|gwa):?\s*)([0-4]\.\d{1,3}(?:\s*\/\s*[14](?:\.0)?)?|\d\.\d+)/i);
+    const isDegree = /\b(?:bachelor|master|b\.s|m\.s|b\.a|m\.a|ph\.d|associate|degree|diploma)\b/i.test(trimmed);
+
+    if (isCollege) {
+      skippingLowerSchool = false;
+      if (currentEdu) entries.push(currentEdu);
+
+      let schoolName = trimmed;
+      let start: string | undefined;
+      let end: string | undefined;
+
+      if (dateMatch) {
+        const parts = dateMatch[0].trim().split(/\s*(?:-|–|—|\bto\b)\s*/i);
+        start = parts[0]?.trim();
+        end = parts[1]?.trim();
+        schoolName = trimmed.replace(dateMatch[0], "").replace(/^[|,\s-]+|[|,\s-]+$/g, "").trim();
+      }
+
+      currentEdu = {
+        school: schoolName || "University",
+        start,
+        end,
+      };
+      continue;
+    }
+
+    if (skippingLowerSchool) continue;
+
     if (currentEdu) {
       if (isDegree && !currentEdu.degree) {
-        currentEdu.degree = line.replace(DATE_RANGE_REGEX, "").trim();
-      }
-      if (gpaMatch && !currentEdu.gpa) {
-        currentEdu.gpa = gpaMatch[1].trim();
-      }
-      if (dateMatch && !currentEdu.end) {
-        currentEdu.end = dateMatch[0].trim();
-      }
-      if (/coursework/i.test(line)) {
-        const courses = line
+        let degText = trimmed;
+        if (gpaMatch) {
+          currentEdu.gpa = gpaMatch[0].trim();
+          degText = degText.replace(gpaMatch[0], "").replace(/\s{2,}/g, " ").trim();
+        }
+        currentEdu.degree = degText.replace(/^[|,\s-]+|[|,\s-]+$/g, "").trim();
+      } else if (gpaMatch && !currentEdu.gpa) {
+        currentEdu.gpa = gpaMatch[0].trim();
+      } else if (/coursework/i.test(trimmed)) {
+        const courses = trimmed
           .replace(/^.*coursework:?/i, "")
           .split(/[,•|/]/)
-          .map((c) => c.trim())
+          .map((c) => c.trim().replace(/\.$/, ""))
           .filter(Boolean);
         currentEdu.coursework = courses;
       }
@@ -446,38 +478,48 @@ function parseSkills(lines: string[]): Profile["skills"] {
   const categories: Profile["skills"] = [];
 
   for (const line of lines) {
-    if (!line.trim()) continue;
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    const isBullet = BULLET_PREFIX_REGEX.test(trimmed);
 
     // Check for "Category: item1, item2, item3" or "Category | item1, item2"
-    if (line.includes(":") || (line.includes("|") && line.length < 120)) {
-      const sep = line.includes(":") ? ":" : "|";
-      const [catName, itemsStr] = line.split(sep, 2);
-      const items = itemsStr
+    if (trimmed.includes(":") || (trimmed.includes("|") && trimmed.length < 120)) {
+      const sep = trimmed.includes(":") ? ":" : "|";
+      const [catName, itemsStr] = trimmed.split(sep, 2);
+      // Strip leading bullet symbols and whitespace to avoid double bullets
+      const cleanCatName = catName.replace(/^[•\-*–—◦▪▫‣⁃➢·\u2022\u25E6\u25AA\u2043\u2219\u2013\u2014\s]+/, "").trim();
+      const items = (itemsStr || "")
         .split(/[,•|/]/)
         .map((s) => s.trim())
-        .filter((s) => s.length > 0 && s.length < 40);
+        .filter((s) => s.length > 0 && s.length < 50);
 
       if (items.length > 0) {
         categories.push({
-          category: catName.trim() || "Technical Skills",
+          category: cleanCatName || "Technical Skills",
           items,
         });
         continue;
       }
     }
 
-    // Split flat bullet or comma lists
-    const items = line
+    // Split flat bullet or continuation lines
+    const items = trimmed
       .replace(BULLET_PREFIX_REGEX, "")
       .split(/[,•|]/)
       .map((s) => s.trim())
-      .filter((s) => s.length > 0 && s.length < 40);
+      .filter((s) => s.length > 0 && s.length < 50);
 
     if (items.length > 0) {
-      categories.push({
-        category: "Technologies",
-        items,
-      });
+      // If it has no bullet indicator and a category already exists, it is a wrapped continuation line
+      if (!isBullet && categories.length > 0) {
+        categories[categories.length - 1].items.push(...items);
+      } else {
+        categories.push({
+          category: "Technologies",
+          items,
+        });
+      }
     }
   }
 
@@ -517,7 +559,7 @@ function parseCertifications(lines: string[]): Profile["certifications"] {
     if (dateMatch) {
       date = dateMatch[0].trim();
       if (issuer) {
-        issuer = issuer.replace(dateMatch[0], "").trim();
+        issuer = issuer.replace(dateMatch[0], "").replace(/^[|,\s-]+|[|,\s-]+$/g, "").trim();
       }
     }
 

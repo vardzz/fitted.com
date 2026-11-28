@@ -154,44 +154,46 @@ export function tailorResumeRuleBased(
 
     return {
       ...exp,
+      originalIdx: roleIdx,
       scoredBullets,
       totalRoleScore,
     };
   });
 
-  // Sort roles by total relevance and recency
-  scoredExperience.sort((a, b) => b.totalRoleScore - a.totalRoleScore);
+  // Sort roles by total relevance and recency to select top candidates
+  const candidateRoles = [...scoredExperience].sort((a, b) => b.totalRoleScore - a.totalRoleScore);
+  const selectedRoles = candidateRoles.slice(0, MAX_ROLES).sort((a, b) => a.originalIdx - b.originalIdx);
+  const droppedRoles = candidateRoles.slice(MAX_ROLES);
+
+  for (const exp of droppedRoles) {
+    dropped.push({
+      item: `${exp.role} at ${exp.org}`,
+      reason: `Omitted to strictly preserve Harvard 1-page constraint in favor of more relevant experiences`,
+    });
+  }
 
   const tailoredExperience: Profile["experience"] = [];
 
-  scoredExperience.forEach((exp, idx) => {
-    if (idx < MAX_ROLES) {
-      // Sort bullets by score descending
-      const sortedBullets = [...exp.scoredBullets].sort((a, b) => b.score - a.score);
-      const keptBullets = sortedBullets.slice(0, maxBulletsPerRole).map((b) => b.text);
-      const droppedBullets = sortedBullets.slice(maxBulletsPerRole);
+  selectedRoles.forEach((exp) => {
+    // Sort bullets by score descending
+    const sortedBullets = [...exp.scoredBullets].sort((a, b) => b.score - a.score);
+    const keptBullets = sortedBullets.slice(0, maxBulletsPerRole).map((b) => b.text);
+    const droppedBullets = sortedBullets.slice(maxBulletsPerRole);
 
-      for (const d of droppedBullets) {
-        dropped.push({
-          item: `${exp.org} - "${d.text.length > 50 ? d.text.slice(0, 50) + "..." : d.text}"`,
-          reason: `Lower keyword alignment for ${roleTrimmed}; omitted to fit 1-page Harvard layout`,
-        });
-      }
-
-      tailoredExperience.push({
-        role: exp.role,
-        org: exp.org,
-        start: exp.start,
-        end: exp.end,
-        bullets: keptBullets.length > 0 ? keptBullets : exp.bullets.slice(0, maxBulletsPerRole),
-      });
-    } else {
-      // Entire role dropped due to Harvard 1-page layout budget
+    for (const d of droppedBullets) {
       dropped.push({
-        item: `${exp.role} at ${exp.org}`,
-        reason: `Omitted to strictly preserve Harvard 1-page constraint in favor of more relevant experiences`,
+        item: `${exp.org} - "${d.text.length > 50 ? d.text.slice(0, 50) + "..." : d.text}"`,
+        reason: `Lower keyword alignment for ${roleTrimmed}; omitted to fit 1-page Harvard layout`,
       });
     }
+
+    tailoredExperience.push({
+      role: exp.role,
+      org: exp.org,
+      start: exp.start,
+      end: exp.end,
+      bullets: keptBullets.length > 0 ? keptBullets : exp.bullets.slice(0, maxBulletsPerRole),
+    });
   });
 
   // 4. Tailor Projects (Select top 2-3 projects matching role keywords)
@@ -267,7 +269,7 @@ export function tailorResumeRuleBased(
     }
 
     return {
-      category: cat.category,
+      category: cat.category.replace(/^[•\-*–—◦▪▫‣⁃➢·\u2022\u25E6\u25AA\u2043\u2219\u2013\u2014\s]+/, "").trim(),
       items: sortedItems,
     };
   });
