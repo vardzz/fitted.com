@@ -38,3 +38,6 @@ next-env.d.ts
 *.png
 *.jpg
 *.jpeg
+!public/fitted-logo.png
+!public/fitted-name.png
+!app/icon.png
