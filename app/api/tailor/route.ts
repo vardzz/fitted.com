@@ -58,6 +58,17 @@ export async function POST(req: NextRequest) {
     const effectiveRole = clarification ? `${trimmedRole} ${clarification}` : trimmedRole;
     const target = extractTargetKeywords(effectiveRole, posting);
 
+    // Guard: if fewer than 3 target keywords were identified, block silent tailoring (Fixes F5)
+    if (target.targetWeights.size < 3) {
+      const response: TailoredResume = {
+        needs_clarification: true,
+        clarifying_question: `I could not identify enough target requirements for "${trimmedRole}". Please choose a track (e.g. Frontend Developer, Backend Developer, Data Analyst, AI/ML Engineer) or paste a job description.`,
+        dropped: [],
+        gaps: [],
+      };
+      return NextResponse.json({ tailored: response });
+    }
+
     // 3. Score Profile Items
     const scored = scoreProfile(profile, target, effectiveRole);
 

@@ -211,11 +211,21 @@ function parseExperience(lines: string[]): Profile["experience"] {
     const trimmed = line.trim();
     if (!trimmed) continue;
 
+    const ROLE_TITLE_PATTERN = /\b(?:intern|engineer|developer|analyst|manager|lead|designer|assistant|officer|specialist|architect|consultant)\b/i;
     const isBullet = RE.bullet.test(trimmed);
     const dateMatch = trimmed.match(RE.dateRange);
-
     const hasOrgSeparator = /\s+(?:\||–|—|\bat\b)\s+/i.test(trimmed);
-    const looksLikeHeader = (dateMatch || hasOrgSeparator) && !isBullet && trimmed.length < 140;
+
+    // Check if next lines have company/date (e.g. CV with title, org, date on separate lines)
+    const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : "";
+    const lineAfterNext = i + 2 < lines.length ? lines[i + 2].trim() : "";
+    const hasUpcomingDate = !isBullet && (RE.dateRange.test(nextLine) || RE.dateRange.test(lineAfterNext));
+    const isRoleTitle = !isBullet && ROLE_TITLE_PATTERN.test(trimmed) && trimmed.length < 60;
+
+    const looksLikeHeader =
+      (dateMatch || hasOrgSeparator || (isRoleTitle && (hasUpcomingDate || !currentEntry))) &&
+      !isBullet &&
+      trimmed.length < 140;
 
     if (looksLikeHeader) {
       if (currentEntry) entries.push(currentEntry);
@@ -231,25 +241,44 @@ function parseExperience(lines: string[]): Profile["experience"] {
         cleanedLine = trimmed.replace(dateMatch[0], "").replace(/^[|,\s-]+|[|,\s-]+$/g, "").trim();
       }
 
-      const splitHeader = cleanedLine.split(/\s*(?:\||–|—|\bat\b|,)\s*/i).filter(Boolean);
       let role = "Software Engineer";
       let org = "Company";
 
-      const ROLE_TITLE_PATTERN = /\b(?:intern|engineer|developer|analyst|manager|lead|designer|assistant|officer|specialist|architect|consultant)\b/i;
-
-      if (splitHeader.length >= 2) {
-        if (ROLE_TITLE_PATTERN.test(splitHeader[1]) && !ROLE_TITLE_PATTERN.test(splitHeader[0])) {
-          role = splitHeader[1].trim();
-          org = splitHeader[0].trim();
+      if (cleanedLine.includes("|") || hasOrgSeparator) {
+        const splitHeader = cleanedLine.split(/\s*(?:\||–|—|\bat\b|,)\s*/i).filter(Boolean);
+        if (splitHeader.length >= 2) {
+          if (ROLE_TITLE_PATTERN.test(splitHeader[1]) && !ROLE_TITLE_PATTERN.test(splitHeader[0])) {
+            role = splitHeader[1].trim();
+            org = splitHeader[0].trim();
+          } else {
+            role = splitHeader[0].trim();
+            org = splitHeader.slice(1).join(" | ").trim();
+          }
         } else {
-          role = splitHeader[0].trim();
-          org = splitHeader.slice(1).join(" | ").trim();
+          role = splitHeader[0]?.trim() || "Engineer";
         }
-      } else if (splitHeader.length === 1 && splitHeader[0].length > 0) {
-        role = splitHeader[0].trim();
-        if (i + 1 < lines.length && !RE.bullet.test(lines[i + 1]) && lines[i + 1].length < 60) {
-          org = lines[i + 1].trim();
+      } else {
+        // Multi-line header: line 1 = Role, line 2 = Org, line 3 = Date
+        role = cleanedLine;
+        if (nextLine && !RE.bullet.test(nextLine) && !RE.dateRange.test(nextLine) && nextLine.length < 60) {
+          org = nextLine;
           i++;
+          const dateCandidate = i + 1 < lines.length ? lines[i + 1].trim() : "";
+          const dMatch = dateCandidate.match(RE.dateRange);
+          if (dMatch) {
+            const parts = dMatch[0].trim().split(/\s*(?:-|–|—|\bto\b)\s*/i);
+            start = parts[0]?.trim();
+            end = parts[1]?.trim();
+            i++;
+          }
+        } else if (nextLine && RE.dateRange.test(nextLine)) {
+          const dMatch = nextLine.match(RE.dateRange);
+          if (dMatch) {
+            const parts = dMatch[0].trim().split(/\s*(?:-|–|—|\bto\b)\s*/i);
+            start = parts[0]?.trim();
+            end = parts[1]?.trim();
+            i++;
+          }
         }
       }
 
@@ -281,9 +310,11 @@ function parseExperience(lines: string[]): Profile["experience"] {
         });
       }
     } else if (currentEntry) {
-      if (currentEntry.bullets.length > 0) {
+      if (ROLE_TITLE_PATTERN.test(trimmed) || trimmed.includes("|")) {
+        // Do not swallow next entry header into previous bullet
+      } else if (currentEntry.bullets.length > 0) {
         currentEntry.bullets[currentEntry.bullets.length - 1].text += ` ${trimmed}`;
-      } else if (!currentEntry.org || currentEntry.org === "Organization") {
+      } else if (!currentEntry.org || currentEntry.org === "Company" || currentEntry.org === "Organization") {
         currentEntry.org = trimmed;
       }
     }

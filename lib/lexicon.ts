@@ -45,6 +45,15 @@ export const LEXICON: Record<string, LexiconEntry> = {
   figma: { display: "Figma", aliases: [], cat: "frontend" },
   redux: { display: "Redux", aliases: ["redux-toolkit", "rtk"], cat: "frontend" },
   zustand: { display: "Zustand", aliases: [], cat: "frontend" },
+  interface: { display: "User Interfaces", aliases: ["ui", "user interface", "interfaces"], cat: "frontend" },
+  responsive: { display: "Responsive Design", aliases: ["responsive design", "responsive web"], cat: "frontend" },
+  component: { display: "Component Design", aliases: ["components", "component architecture"], cat: "frontend" },
+  dashboard: { display: "Dashboards", aliases: ["dashboard", "admin dashboard"], cat: "frontend" },
+  "state management": { display: "State Management", aliases: ["state-management"], cat: "frontend" },
+  rendering: { display: "Rendering Optimization", aliases: ["rendering", "core web vitals"], cat: "frontend" },
+  accessibility: { display: "Accessibility", aliases: ["a11y", "wcag"], cat: "frontend" },
+  "design system": { display: "Design Systems", aliases: ["design systems"], cat: "frontend" },
+  canvas: { display: "HTML5 Canvas", aliases: ["webgl"], cat: "frontend" },
 
   // Backend
   "node.js": { display: "Node.js", aliases: ["nodejs", "node"], cat: "backend" },

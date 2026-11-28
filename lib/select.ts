@@ -190,7 +190,7 @@ export function selectWithinBudget(
     for (const b of exp.bullets) {
       if (
         /\b(?:by|of|to|from)\s+(\d{1,3})$/i.test(b.text.trim()) &&
-        /\b(?:reduce|cut|increase|improve|enhance|boost|drop|streamline)\b/i.test(b.text)
+        /\b(?:reduc|cut|increas|improv|enhanc|boost|drop|streamlin)\w*\b/i.test(b.text)
       ) {
         warnings.push(`Bullet may be missing a '%' sign: "${b.text}" -> suggested: "${b.text}%"`);
       }
