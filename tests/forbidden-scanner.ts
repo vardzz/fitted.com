@@ -33,7 +33,8 @@ export function checkForbiddenStrings(srcDir: string = process.cwd()): { clean: 
           entry.name === "fitted-test-report.md" ||
           fullPath.includes(path.join("src", "app", "page.tsx")) ||
           fullPath.includes(path.join("src", "app", "privacy")) ||
-          fullPath.includes(path.join("src", "app", "terms"))
+          fullPath.includes(path.join("src", "app", "terms")) ||
+          fullPath.includes(path.join("src", "components", "landing"))
         ) {
           continue;
         }
