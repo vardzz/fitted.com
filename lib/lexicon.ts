@@ -94,6 +94,12 @@ export const LEXICON: Record<string, LexiconEntry> = {
   linux: { display: "Linux", aliases: ["ubuntu", "debian"], cat: "cloud_devops" },
   nginx: { display: "Nginx", aliases: [], cat: "cloud_devops" },
   postman: { display: "Postman", aliases: [], cat: "tools" },
+  terraform: { display: "Terraform", aliases: [], cat: "cloud_devops" },
+  ansible: { display: "Ansible", aliases: [], cat: "cloud_devops" },
+  bash: { display: "Bash", aliases: ["shell script", "shell scripting"], cat: "language" },
+  wireshark: { display: "Wireshark", aliases: [], cat: "tools" },
+  selenium: { display: "Selenium", aliases: [], cat: "tools" },
+  cypress: { display: "Cypress", aliases: [], cat: "tools" },
 
   // Mobile
   flutter: { display: "Flutter", aliases: [], cat: "mobile", related: ["dart"] },
@@ -116,6 +122,10 @@ export const LEXICON: Record<string, LexiconEntry> = {
   "gemini api": { display: "Gemini API", aliases: ["gemini"], cat: "data_ai" },
   openai: { display: "OpenAI", aliases: ["chatgpt", "gpt-4"], cat: "data_ai" },
   "prompt engineering": { display: "Prompt Engineering", aliases: [], cat: "data_ai" },
+  spark: { display: "Apache Spark", aliases: ["apache spark", "pyspark"], cat: "data_ai" },
+  airflow: { display: "Apache Airflow", aliases: ["apache airflow"], cat: "data_ai" },
+  kafka: { display: "Apache Kafka", aliases: ["apache kafka"], cat: "backend" },
+  snowflake: { display: "Snowflake", aliases: [], cat: "database" },
   seo: { display: "SEO", aliases: ["seo optimization", "search engine optimization"], cat: "tools" },
 };
 

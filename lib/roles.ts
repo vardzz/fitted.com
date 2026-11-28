@@ -152,6 +152,48 @@ export const ROLES: Record<string, RolePreset> = {
     nice: ["terraform", "github", "nginx", "python", "bash"],
     verbs: ["automated", "containerized", "provisioned", "orchestrated", "monitored", "hardened"],
   },
+  "cybersecurity analyst": {
+    name: "Cybersecurity Analyst",
+    titles: ["cybersecurity", "security analyst", "information security", "infosec", "soc analyst", "cyber security"],
+    must: ["python", "linux", "wireshark", "network security", "sql"],
+    nice: ["siem", "incident response", "firewalls", "vulnerability assessment", "git", "bash"],
+    verbs: ["investigated", "mitigated", "monitored", "audited", "secured", "configured"],
+  },
+  "data engineer": {
+    name: "Data Engineer",
+    titles: ["data engineer", "etl developer", "big data", "pipeline engineer"],
+    must: ["python", "sql", "spark", "airflow", "postgresql"],
+    nice: ["kafka", "docker", "aws", "snowflake", "pandas", "git"],
+    verbs: ["engineered", "built", "streamlined", "scaled", "optimized", "orchestrated"],
+  },
+  "cloud engineer": {
+    name: "Cloud Engineer",
+    titles: ["cloud architect", "cloud specialist", "aws engineer", "azure engineer"],
+    must: ["aws", "azure", "terraform", "docker", "linux"],
+    nice: ["kubernetes", "ci/cd", "python", "bash", "nginx"],
+    verbs: ["architected", "migrated", "provisioned", "automated", "optimized", "deployed"],
+  },
+  "qa engineer": {
+    name: "QA Engineer",
+    titles: ["qa engineer", "qa automation", "test engineer", "software tester", "quality assurance"],
+    must: ["selenium", "python", "javascript", "cypress", "postman"],
+    nice: ["ci/cd", "git", "test automation", "sql", "rest api"],
+    verbs: ["automated", "tested", "identified", "executed", "validated", "reported"],
+  },
+  "ui/ux designer": {
+    name: "UI/UX Designer",
+    titles: ["ui/ux designer", "product designer", "ux designer", "ui designer", "interaction designer"],
+    must: ["figma", "interface", "responsive", "design system", "component"],
+    nice: ["html", "css", "prototyping", "wireframing", "accessibility"],
+    verbs: ["designed", "prototyped", "conducted", "crafted", "iterated", "collaborated"],
+  },
+  "systems engineer": {
+    name: "Systems Engineer",
+    titles: ["systems engineer", "system administrator", "sysadmin", "infrastructure engineer"],
+    must: ["linux", "bash", "python", "docker", "sql"],
+    nice: ["ansible", "aws", "git", "nginx", "ci/cd"],
+    verbs: ["administered", "configured", "maintained", "resolved", "optimized", "monitored"],
+  },
 };
 
 /**
