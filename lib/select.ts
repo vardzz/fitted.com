@@ -159,23 +159,23 @@ export function selectWithinBudget(
     const cutBullets = sortedBullets.slice(allowedBullets);
 
     for (const cb of cutBullets) {
-      let reason = "Omitted to maintain a concise 3-bullet cap per job, prioritizing entries with direct technical keywords.";
+      let reason = "Omitted to satisfy the 3-bullet Harvard cap per job, prioritizing bullets with higher technical metrics.";
       if (cb.matches.length === 0) {
         if (/\b(?:video|media|social|content|promo|collateral|marketing|schedule|calendar)\b/i.test(cb.text)) {
-          reason = "Multimedia and content production task; omitted to focus on core engineering and software development.";
+          reason = "Non-core multimedia task; omitted to focus strictly on software engineering and development deliverables.";
         } else if (/\b(?:research|documentation|maintenance|assist|coordinate)\b/i.test(cb.text)) {
-          reason = "General support and maintenance task; prioritized hands-on technical deliverables and achievements.";
+          reason = "General maintenance and documentation task; prioritized hands-on deployment and engineering accomplishments.";
         } else if (/\b(?:collaborate|partner|coordinate|team)\b/i.test(cb.text)) {
-          reason = "General collaboration statement; prioritized quantifiable accomplishments with technical stack keywords.";
+          reason = "General team coordination statement; prioritized bullets demonstrating specific tech stack implementation and performance results.";
         } else {
-          reason = "Lacks target role keywords; prioritized bullets that directly match job competencies.";
+          reason = "Lacks target role keywords; omitted in favor of bullets that directly demonstrate required technical competencies.";
         }
       } else {
-        reason = "Lower keyword density than other bullets in this role; omitted to fit the 1-page Harvard layout.";
+        reason = "Lower keyword density than other bullets in this role; omitted to preserve 1-page Harvard density.";
       }
 
       dropped.push({
-        text: `${e.entry.org} - "${truncateSnippet(cb.text, 55)}"`,
+        text: `${e.entry.org} — "${truncateSnippet(cb.text, 55)}"`,
         reason,
       });
     }
@@ -248,12 +248,12 @@ export function selectWithinBudget(
     const cut = sortedBullets.slice(2);
 
     for (const cb of cut) {
-      let reason = "Omitted to enforce the 2-bullet per project limit, highlighting primary technical architecture.";
+      let reason = "Omitted to maintain a concise 2-bullet project limit, keeping focus on core technical architecture.";
       if (/\b(?:validation|feedback|classmate|upvote|community|recognition)\b/i.test(cb.text)) {
-        reason = "Informal peer feedback; prioritized core technical features, architecture, and deployment stack.";
+        reason = "Informal peer feedback; prioritized technical implementation, system architecture, and deployment features.";
       }
       dropped.push({
-        text: `${p.project.name} - "${truncateSnippet(cb.text, 55)}"`,
+        text: `${p.project.name} — "${truncateSnippet(cb.text, 55)}"`,
         reason,
       });
     }

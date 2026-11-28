@@ -724,35 +724,22 @@ export default function Home() {
                       <div className="insight-card-header">
                         <h3 className="insight-card-title">What was cut and why</h3>
                         <p className="insight-card-subtitle">
-                          Every omission is calculated deterministically to protect your 1-page Harvard layout while prioritizing high-impact achievements for this role.
+                          Omitted to guarantee an exact 1-page Harvard layout while prioritizing high-impact entries for this role.
                         </p>
                       </div>
 
                       {(m.tailoredData || tailoredData)?.dropped &&
                       (m.tailoredData || tailoredData)!.dropped.length > 0 ? (
-                        <div className="insight-cut-list">
-                          {(m.tailoredData || tailoredData)!.dropped.map((cut, idx) => {
-                            let tag = "Experience";
-                            if (cut.item.startsWith("Skill:")) tag = "Skill";
-                            else if (cut.item.startsWith("Project:")) tag = "Project";
-                            else if (cut.item.startsWith("Certification:")) tag = "Certification";
-                            else if (cut.item.includes(" - \"")) {
-                              tag = "Bullet";
-                            }
-
-                            return (
-                              <div key={idx} className="insight-cut-card">
-                                <div className="insight-cut-top">
-                                  <span className="insight-cut-tag">{tag}</span>
-                                  <strong className="insight-cut-title">{cut.item}</strong>
-                                </div>
-                                <div className="insight-cut-body">
-                                  <span className="insight-cut-why-label">Reason:</span>
-                                  <span className="insight-cut-reason">{cut.reason}</span>
-                                </div>
+                        <div className="insight-minimal-list">
+                          {(m.tailoredData || tailoredData)!.dropped.map((cut, idx) => (
+                            <div key={idx} className="insight-minimal-item">
+                              <span className="insight-minimal-dot" />
+                              <div className="insight-minimal-content">
+                                <span className="insight-minimal-title">{cut.item}</span>
+                                <span className="insight-minimal-reason">{cut.reason}</span>
                               </div>
-                            );
-                          })}
+                            </div>
+                          ))}
                         </div>
                       ) : (
                         <p className="insight-empty" style={{ color: "#71717a" }}>
